@@ -18,7 +18,6 @@ import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -46,7 +45,6 @@ public class RecyclerViewBanner extends FrameLayout {
     private RecyclerView mRecyclerView;
     private RecyclerAdapter adapter;
     private LinearLayoutManager mLinearLayoutManager;
-    private LinearLayoutManager indicatorLayoutManager;
 
     private int WHAT_AUTO_PLAY = 1000;
 
@@ -179,15 +177,15 @@ public class RecyclerViewBanner extends FrameLayout {
         addView(mRecyclerView, vpLayoutParams);
         //指示器部分
         indicatorContainer = new RecyclerView(context);
-        indicatorLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+        LinearLayoutManager indicatorLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
         indicatorContainer.setLayoutManager(indicatorLayoutManager);
         indicatorAdapter = new IndicatorAdapter();
         indicatorContainer.setAdapter(indicatorAdapter);
-        LayoutParams linearLayoutParams = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+        LayoutParams params = new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
-        linearLayoutParams.gravity = Gravity.BOTTOM | gravity;
-        linearLayoutParams.setMargins(marginLeft, 0, marginRight, marginBottom);
-        addView(indicatorContainer, linearLayoutParams);
+        params.gravity = Gravity.BOTTOM | gravity;
+        params.setMargins(marginLeft, 0, marginRight, marginBottom);
+        addView(indicatorContainer, params);
     }
 
 
@@ -239,6 +237,7 @@ public class RecyclerViewBanner extends FrameLayout {
      * 设置轮播数据集
      */
     public void initBannerImageView(@NonNull List<String> newList) {
+        //解决recyclerView嵌套问题
         if (compareListDifferent(newList, this.urlList)) {
             hasInit = false;
             setVisibility(VISIBLE);
@@ -278,6 +277,7 @@ public class RecyclerViewBanner extends FrameLayout {
                 setPlaying(true);
                 break;
         }
+        //解决recyclerView嵌套问题
         try {
             return super.dispatchTouchEvent(ev);
         } catch (IllegalArgumentException ex) {
@@ -285,7 +285,7 @@ public class RecyclerViewBanner extends FrameLayout {
         }
         return false;
     }
-
+    //解决recyclerView嵌套问题
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
         try {
@@ -295,7 +295,7 @@ public class RecyclerViewBanner extends FrameLayout {
         }
         return false;
     }
-
+    //解决recyclerView嵌套问题
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         try {
@@ -340,7 +340,6 @@ public class RecyclerViewBanner extends FrameLayout {
 
         @Override
         public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            Log.d("xxx--", "onCreateViewHolder  ");
             ImageView bannerItem = new ImageView(getContext());
             RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT);
@@ -364,7 +363,6 @@ public class RecyclerViewBanner extends FrameLayout {
                 return;
             String url = urlList.get(position % bannerSize);
             ImageView img = (ImageView) holder.itemView;
-            Log.d("xxx--", position % bannerSize + "  " + holder.toString());
             Glide.with(getContext()).load(url).into(img);
         }
 
