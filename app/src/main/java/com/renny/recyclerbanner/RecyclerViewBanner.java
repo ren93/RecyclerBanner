@@ -34,11 +34,12 @@ import java.util.List;
 public class RecyclerViewBanner extends FrameLayout {
 
     private int autoPlayDuration;//刷新间隔时间
-    private boolean showIndicator;
+
+
+    private boolean showIndicator;//是否显示指示器
     private RecyclerView indicatorContainer;
     private Drawable mSelectedDrawable;
     private Drawable mUnselectedDrawable;
-
     private IndicatorAdapter indicatorAdapter;
     private int indicatorMargin;//指示器间距
 
@@ -59,14 +60,13 @@ public class RecyclerViewBanner extends FrameLayout {
     private OnBannerItemClickListener onBannerItemClickListener;
 
 
-
     private Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
-                    mRecyclerView.smoothScrollToPosition(++currentIndex);
-                    refreshIndicator();
-                    mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
+                mRecyclerView.smoothScrollToPosition(++currentIndex);
+                refreshIndicator();
+                mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
 
             }
             return false;
@@ -94,6 +94,7 @@ public class RecyclerViewBanner extends FrameLayout {
         mSelectedDrawable = a.getDrawable(R.styleable.RecyclerViewBanner_indicatorSelectedSrc);
         mUnselectedDrawable = a.getDrawable(R.styleable.RecyclerViewBanner_indicatorUnselectedSrc);
         if (mSelectedDrawable == null) {
+            //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
             selectedGradientDrawable.setShape(GradientDrawable.OVAL);
             selectedGradientDrawable.setColor(getColor(R.color.colorAccent));
@@ -102,7 +103,7 @@ public class RecyclerViewBanner extends FrameLayout {
             mSelectedDrawable = new LayerDrawable(new Drawable[]{selectedGradientDrawable});
         }
         if (mUnselectedDrawable == null) {
-            //绘制未选中状态图形
+            //绘制默认未选中状态图形
             GradientDrawable unSelectedGradientDrawable = new GradientDrawable();
             unSelectedGradientDrawable.setShape(GradientDrawable.OVAL);
             unSelectedGradientDrawable.setColor(getColor(R.color.colorPrimaryDark));
@@ -124,6 +125,13 @@ public class RecyclerViewBanner extends FrameLayout {
         } else {
             gravity = Gravity.CENTER;
         }
+        int o = a.getInt(R.styleable.RecyclerViewBanner_orientation, 0);
+        int orientation = 0;
+        if (o == 0) {
+            orientation = LinearLayoutManager.HORIZONTAL;
+        } else if (o == 1) {
+            orientation = LinearLayoutManager.VERTICAL;
+        }
         a.recycle();
         //recyclerView部分
         mRecyclerView = new RecyclerView(context);
@@ -134,7 +142,7 @@ public class RecyclerViewBanner extends FrameLayout {
         mRecyclerView.setAdapter(adapter);
         new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
         mRecyclerView.setItemAnimator(new BannerAnimator());
-        mLinearLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+        mLinearLayoutManager = new LinearLayoutManager(context, orientation, false);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -177,7 +185,8 @@ public class RecyclerViewBanner extends FrameLayout {
         addView(mRecyclerView, vpLayoutParams);
         //指示器部分
         indicatorContainer = new RecyclerView(context);
-        LinearLayoutManager indicatorLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
+
+        LinearLayoutManager indicatorLayoutManager = new LinearLayoutManager(context, orientation, false);
         indicatorContainer.setLayoutManager(indicatorLayoutManager);
         indicatorAdapter = new IndicatorAdapter();
         indicatorContainer.setAdapter(indicatorAdapter);
@@ -186,6 +195,9 @@ public class RecyclerViewBanner extends FrameLayout {
         params.gravity = Gravity.BOTTOM | gravity;
         params.setMargins(marginLeft, 0, marginRight, marginBottom);
         addView(indicatorContainer, params);
+        if (!showIndicator) {
+            indicatorContainer.setVisibility(GONE);
+        }
     }
 
 
@@ -228,9 +240,11 @@ public class RecyclerViewBanner extends FrameLayout {
 
     public void setShowIndicator(boolean showIndicator) {
         this.showIndicator = showIndicator;
-        if (indicatorContainer != null) {
-            indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
-        }
+        indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
+    }
+
+    public void setOnBannerItemClickListener(OnBannerItemClickListener onBannerItemClickListener) {
+        this.onBannerItemClickListener = onBannerItemClickListener;
     }
 
     /**
@@ -261,11 +275,6 @@ public class RecyclerViewBanner extends FrameLayout {
     }
 
 
-    public void setOnBannerItemClickListener(OnBannerItemClickListener onBannerItemClickListener) {
-        this.onBannerItemClickListener = onBannerItemClickListener;
-    }
-
-
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         switch (ev.getAction()) {
@@ -285,6 +294,7 @@ public class RecyclerViewBanner extends FrameLayout {
         }
         return false;
     }
+
     //解决recyclerView嵌套问题
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
@@ -295,6 +305,7 @@ public class RecyclerViewBanner extends FrameLayout {
         }
         return false;
     }
+
     //解决recyclerView嵌套问题
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
@@ -394,8 +405,7 @@ public class RecyclerViewBanner extends FrameLayout {
             ImageView bannerPoint = new ImageView(getContext());
             RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.rightMargin = indicatorMargin;
-            lp.leftMargin = indicatorMargin;
+            lp.setMargins(indicatorMargin,indicatorMargin,indicatorMargin,indicatorMargin);
             bannerPoint.setLayoutParams(lp);
             return new RecyclerView.ViewHolder(bannerPoint) {
             };
