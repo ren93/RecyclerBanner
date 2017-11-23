@@ -399,5 +399,4 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         return false;
     }
 
-
 }
