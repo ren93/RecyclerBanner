@@ -1,22 +1,21 @@
 package com.renny.recyclerbanner;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class Main2Activity extends AppCompatActivity {
+    RecyclerViewBanner banner, banner2;
 
-    RecyclerViewBannerNew banner,banner2;
+
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main2);
         banner = findViewById(R.id.banner);
         banner2= findViewById(R.id.banner2);
         List<String> list = new ArrayList<>();
@@ -26,11 +25,6 @@ public class MainActivity extends AppCompatActivity {
         list.add("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1510833032474&di=3723ba473a9c92dc420e2538a9aa584e&imgtype=0&src=http%3A%2F%2Fpic1.win4000.com%2Fwallpaper%2Fc%2F57450b9a295f5.jpg");
         banner.initBannerImageView(list);
         banner2.initBannerImageView(list);
-
     }
 
-
-    public void jump(View view) {
-        startActivity(new Intent(MainActivity.this,Main2Activity.class));
-    }
 }

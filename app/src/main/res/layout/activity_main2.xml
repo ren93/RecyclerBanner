@@ -8,27 +8,19 @@
     android:orientation="vertical"
     tools:context="com.renny.recyclerbanner.MainActivity">
 
-    <com.renny.recyclerbanner.RecyclerViewBannerNew
+    <com.renny.recyclerbanner.RecyclerViewBanner
         android:id="@+id/banner"
         android:layout_width="match_parent"
         android:layout_height="200dp"
-        app:orientationN="horizontal"
-        app:showIndicator="false"/>
+        app:orientation="horizontal"
+     />
 
-    <com.renny.recyclerbanner.RecyclerViewBannerNew
+    <com.renny.recyclerbanner.RecyclerViewBanner
         android:id="@+id/banner2"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_marginTop="20dp"
-        app:orientationN="vertical"
-        app:showIndicator="false"/>
-
-    <Button
-        android:layout_marginTop="20dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="jump"
-        android:text="查看基础版"
-        android:layout_gravity="center_horizontal"
-        />
+        app:orientation="vertical"
+      />
 </LinearLayout>
+
