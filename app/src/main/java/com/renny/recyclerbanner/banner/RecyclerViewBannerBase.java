@@ -1,4 +1,4 @@
-package com.renny.recyclerbanner;
+package com.renny.recyclerbanner.banner;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -24,40 +24,41 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.renny.recyclerbanner.layoutmanager.BannerLayoutManager;
-import com.renny.recyclerbanner.layoutmanager.Util;
+import com.renny.recyclerbanner.R;
+import com.renny.recyclerbanner.banner.adapter.BaseBannerAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class RecyclerViewBannerNew extends FrameLayout {
+public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManager, A extends BaseBannerAdapter> extends FrameLayout {
 
-    private int autoPlayDuration;//刷新间隔时间
+    protected int autoPlayDuration;//刷新间隔时间
+
+    protected boolean showIndicator;//是否显示指示器
+    protected RecyclerView indicatorContainer;
+    protected Drawable mSelectedDrawable;
+    protected Drawable mUnselectedDrawable;
+    protected IndicatorAdapter indicatorAdapter;
+    protected int indicatorMargin;//指示器间距
+
+    protected RecyclerView mRecyclerView;
+    protected A adapter;
+    protected L mLayoutManager;
+
+    protected int WHAT_AUTO_PLAY = 1000;
+
+    protected boolean hasInit;
+    protected int bannerSize = 1;
+    protected int currentIndex;
+    protected boolean isPlaying;
+
+    protected boolean isAutoPlaying;
+    protected List<String> tempUrlList = new ArrayList<>();
+
+    protected OnBannerItemClickListener onBannerItemClickListener;
 
 
-    private boolean showIndicator;//是否显示指示器
-    private RecyclerView indicatorContainer;
-    private Drawable mSelectedDrawable;
-    private Drawable mUnselectedDrawable;
-    private IndicatorAdapter indicatorAdapter;
-    private int indicatorMargin;//指示器间距
-
-    private RecyclerView mRecyclerView;
-    private BannerAdapter adapter;
-    BannerLayoutManager linearLayoutManager;
-    private int WHAT_AUTO_PLAY = 1000;
-
-    private boolean hasInit;
-    private int bannerSize = 1;
-    private int currentIndex;
-    private boolean isPlaying;
-
-    private boolean isAutoPlaying;
-    private List<String> urlList;
-
-    private OnBannerItemClickListener onBannerItemClickListener;
-
-
-    private Handler mHandler = new Handler(new Handler.Callback() {
+    protected Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
@@ -70,26 +71,26 @@ public class RecyclerViewBannerNew extends FrameLayout {
         }
     });
 
-    public RecyclerViewBannerNew(Context context) {
+    public RecyclerViewBannerBase(Context context) {
         this(context, null);
     }
 
-    public RecyclerViewBannerNew(Context context, AttributeSet attrs) {
+    public RecyclerViewBannerBase(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RecyclerViewBannerNew(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RecyclerViewBannerBase(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView(context, attrs);
     }
 
-    private void initView(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerViewBannerNew);
-        showIndicator = a.getBoolean(R.styleable.RecyclerViewBannerNew_showIndicatorN, true);
-        autoPlayDuration = a.getInt(R.styleable.RecyclerViewBannerNew_intervalN, 4000);
-        isAutoPlaying = a.getBoolean(R.styleable.RecyclerViewBannerNew_autoPlayingN, true);
-        mSelectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerNew_indicatorSelectedSrcN);
-        mUnselectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerNew_indicatorUnselectedSrcN);
+    protected void initView(Context context, AttributeSet attrs) {
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerViewBannerBase);
+        showIndicator = a.getBoolean(R.styleable.RecyclerViewBannerBase_showIndicator, true);
+        autoPlayDuration = a.getInt(R.styleable.RecyclerViewBannerBase_interval, 4000);
+        isAutoPlaying = a.getBoolean(R.styleable.RecyclerViewBannerBase_autoPlaying, true);
+        mSelectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerBase_indicatorSelectedSrc);
+        mUnselectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerBase_indicatorUnselectedSrc);
         if (mSelectedDrawable == null) {
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
@@ -109,11 +110,11 @@ public class RecyclerViewBannerNew extends FrameLayout {
             mUnselectedDrawable = new LayerDrawable(new Drawable[]{unSelectedGradientDrawable});
         }
 
-        indicatorMargin = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorSpaceN, dp2px(4));
-        int marginLeft = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorMarginLeftN, dp2px(16));
-        int marginRight = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorMarginRightN, dp2px(0));
-        int marginBottom = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorMarginBottomN, dp2px(11));
-        int g = a.getInt(R.styleable.RecyclerViewBannerNew_indicatorGravityN, 0);
+        indicatorMargin = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorSpace, dp2px(4));
+        int marginLeft = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorMarginLeft, dp2px(16));
+        int marginRight = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorMarginRight, dp2px(0));
+        int marginBottom = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorMarginBottom, dp2px(11));
+        int g = a.getInt(R.styleable.RecyclerViewBannerBase_indicatorGravity, 0);
         int gravity;
         if (g == 0) {
             gravity = GravityCompat.START;
@@ -122,7 +123,7 @@ public class RecyclerViewBannerNew extends FrameLayout {
         } else {
             gravity = Gravity.CENTER;
         }
-        int o = a.getInt(R.styleable.RecyclerViewBanner_orientation, 0);
+        int o = a.getInt(R.styleable.RecyclerViewBannerBase_orientation, 0);
         int orientation = 0;
         if (o == 0) {
             orientation = LinearLayoutManager.HORIZONTAL;
@@ -132,24 +133,20 @@ public class RecyclerViewBannerNew extends FrameLayout {
         a.recycle();
         //recyclerView部分
         mRecyclerView = new RecyclerView(context);
-        mRecyclerView.setOverScrollMode(OVER_SCROLL_NEVER);
         new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
-        linearLayoutManager = new BannerLayoutManager(orientation, Util.dp2px(10));
-        mRecyclerView.setLayoutManager(linearLayoutManager);
+        mLayoutManager = getLayoutManager(context, orientation);
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-
+                onBannerScrolled(recyclerView, dx, dy);
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                int first = linearLayoutManager.getCurrentPosition();
-                if (currentIndex != first) {
-                    currentIndex = first;
-                    refreshIndicator();
-                }
+                onBannerScrollStateChanged(recyclerView, newState);
+
             }
         });
         LayoutParams vpLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
@@ -172,6 +169,13 @@ public class RecyclerViewBannerNew extends FrameLayout {
         }
     }
 
+    protected abstract void onBannerScrolled(RecyclerView recyclerView, int dx, int dy);
+
+    protected abstract void onBannerScrollStateChanged(RecyclerView recyclerView, int newState);
+
+    protected abstract L getLayoutManager(Context context, int orientation);
+
+    protected abstract A getAdapter(Context context, List<String> list, OnBannerItemClickListener onBannerItemClickListener);
 
     /**
      * 设置轮播间隔时间
@@ -187,7 +191,7 @@ public class RecyclerViewBannerNew extends FrameLayout {
      *
      * @param playing 开始播放
      */
-    private synchronized void setPlaying(boolean playing) {
+    protected synchronized void setPlaying(boolean playing) {
         if (isAutoPlaying && hasInit) {
             if (!isPlaying && playing && adapter != null && adapter.getItemCount() > 2) {
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
@@ -222,20 +226,18 @@ public class RecyclerViewBannerNew extends FrameLayout {
     /**
      * 设置轮播数据集
      */
-    public void initBannerImageView(@NonNull List<String> newList) {
+    public void initBannerImageView(@NonNull List<String> newList, OnBannerItemClickListener onBannerItemClickListener) {
         //解决recyclerView嵌套问题
-        if (compareListDifferent(newList, this.urlList)) {
+        if (compareListDifferent(newList, tempUrlList)) {
             hasInit = false;
             setVisibility(VISIBLE);
             setPlaying(false);
-            bannerSize = newList.size();
-            adapter = new BannerAdapter(getContext(), newList);
+            adapter = getAdapter(getContext(), newList, onBannerItemClickListener);
             mRecyclerView.setAdapter(adapter);
-            urlList = newList;
+            tempUrlList = newList;
+            bannerSize = tempUrlList.size();
             if (bannerSize > 1) {
-                if (showIndicator) {
-                    indicatorContainer.setVisibility(VISIBLE);
-                }
+                indicatorContainer.setVisibility(VISIBLE);
                 currentIndex = bannerSize * 10000;
                 mRecyclerView.scrollToPosition(currentIndex);
                 indicatorAdapter.notifyDataSetChanged();
@@ -248,6 +250,12 @@ public class RecyclerViewBannerNew extends FrameLayout {
         }
     }
 
+    /**
+     * 设置轮播数据集
+     */
+    public void initBannerImageView(@NonNull List<String> newList) {
+        initBannerImageView(newList, null);
+    }
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -313,12 +321,10 @@ public class RecyclerViewBannerNew extends FrameLayout {
         }
     }
 
-
-
     /**
-     * RecyclerView适配器
+     * 标示点适配器
      */
-    private class IndicatorAdapter extends RecyclerView.Adapter {
+    protected class IndicatorAdapter extends RecyclerView.Adapter {
 
         int currentPosition = 0;
 
@@ -355,7 +361,7 @@ public class RecyclerViewBannerNew extends FrameLayout {
     /**
      * 改变导航的指示点
      */
-    private synchronized void refreshIndicator() {
+    protected synchronized void refreshIndicator() {
         if (showIndicator && bannerSize > 1) {
             indicatorAdapter.setPosition(currentIndex % bannerSize);
             indicatorAdapter.notifyDataSetChanged();
@@ -366,7 +372,7 @@ public class RecyclerViewBannerNew extends FrameLayout {
         void onItemClick(int position);
     }
 
-    private int dp2px(int dp) {
+    protected int dp2px(int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
                 Resources.getSystem().getDisplayMetrics());
     }
@@ -374,11 +380,11 @@ public class RecyclerViewBannerNew extends FrameLayout {
     /**
      * 获取颜色
      */
-    private int getColor(@ColorRes int color) {
+    protected int getColor(@ColorRes int color) {
         return ContextCompat.getColor(getContext(), color);
     }
 
-    private boolean compareListDifferent(List<String> newTabList, List<String> oldTabList) {
+    protected boolean compareListDifferent(List<String> newTabList, List<String> oldTabList) {
         if (oldTabList == null || oldTabList.isEmpty())
             return true;
         if (newTabList.size() != oldTabList.size())

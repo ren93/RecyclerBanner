@@ -1,4 +1,4 @@
-package com.renny.recyclerbanner.layoutmanager;
+package com.renny.recyclerbanner.banner.layoutmanager;
 
 import android.support.v7.widget.RecyclerView;
 

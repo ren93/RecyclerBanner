@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.renny.recyclerbanner.layoutmanager;
+package com.renny.recyclerbanner.banner.layoutmanager;
 
 import android.graphics.Rect;
 import android.support.v7.widget.RecyclerView;

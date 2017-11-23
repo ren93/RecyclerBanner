@@ -1,4 +1,4 @@
-package com.renny.recyclerbanner.layoutmanager;
+package com.renny.recyclerbanner.banner.layoutmanager;
 
 import android.graphics.PointF;
 import android.os.Build;
@@ -19,8 +19,7 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  */
 
 
-public class BannerLayoutManager extends RecyclerView.LayoutManager
-        implements RecyclerView.SmoothScroller.ScrollVectorProvider {
+public class BannerLayoutManager extends RecyclerView.LayoutManager implements RecyclerView.SmoothScroller.ScrollVectorProvider {
 
     private static final float SCALE_RATE = 1.2f;
     private  int mOrientation;

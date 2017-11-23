@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="RecyclerViewBanner">
+    <declare-styleable name="RecyclerViewBannerBase">
         <attr name="interval" format="integer"/>
         <attr name="showIndicator" format="boolean"/>
         <attr name="indicatorSelectedSrc" format="color|reference"/>
@@ -21,26 +21,7 @@
         <attr name="autoPlaying" format="boolean"/>
     </declare-styleable>
 
-    <declare-styleable name="RecyclerViewBannerNew">
-        <attr name="intervalN" format="integer"/>
-        <attr name="showIndicatorN" format="boolean"/>
-        <attr name="indicatorSelectedSrcN" format="color|reference"/>
-        <attr name="indicatorUnselectedSrcN" format="color|reference"/>
-        <attr name="indicatorSpaceN" format="dimension|reference"/>
-        <attr name="indicatorMarginLeftN" format="dimension|reference"/>
-        <attr name="indicatorMarginRightN" format="dimension|reference"/>
-        <attr name="indicatorMarginBottomN" format="dimension|reference"/>
-        <attr name="indicatorGravityN" format="enum">
-            <enum name="left" value="0"/>
-            <enum name="center" value="1"/>
-            <enum name="right" value="2"/>
-        </attr>
-        <attr name="orientationN" format="enum">
-            <enum name="horizontal" value="0"/>
-            <enum name="vertical" value="1"/>
-        </attr>
-        <attr name="autoPlayingN" format="boolean"/>
-    </declare-styleable>
+
 
 
 </resources>
