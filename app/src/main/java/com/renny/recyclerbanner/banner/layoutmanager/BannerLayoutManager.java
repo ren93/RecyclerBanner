@@ -1,8 +1,6 @@
 package com.renny.recyclerbanner.banner.layoutmanager;
 
 import android.graphics.PointF;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
@@ -54,7 +52,6 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      */
     private int mPendingScrollPosition = NO_POSITION;
 
-    private SavedState mPendingSavedState = null;
 
     private float mInterval; //the mInterval of each item's mOffset
 
@@ -113,24 +110,6 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     }
 
 
-    @Override
-    public Parcelable onSaveInstanceState() {
-        if (mPendingSavedState != null) {
-            return new SavedState(mPendingSavedState);
-        }
-        SavedState savedState = new SavedState();
-        savedState.position = mPendingScrollPosition;
-        savedState.offset = mOffset;
-        return savedState;
-    }
-
-    @Override
-    public void onRestoreInstanceState(Parcelable state) {
-        if (state instanceof SavedState) {
-            mPendingSavedState = new SavedState((SavedState) state);
-            requestLayout();
-        }
-    }
 
     /**
      * @return true if {@link #getOrientation()} is {@link #HORIZONTAL}
@@ -236,16 +215,9 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
             mLeftItems = (int) Math.abs(minRemoveOffset() / mInterval) + 1;
             mRightItems = (int) Math.abs(maxRemoveOffset() / mInterval) + 1;
         }
-
-        if (mPendingSavedState != null) {
-            mPendingScrollPosition = mPendingSavedState.position;
-            mOffset = mPendingSavedState.offset;
-        }
-
         if (mPendingScrollPosition != NO_POSITION) {
             mOffset = mPendingScrollPosition * mInterval;
         }
-
         detachAndScrapAttachedViews(recycler);
         layoutItems(recycler);
     }
@@ -253,7 +225,6 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     @Override
     public void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
-        mPendingSavedState = null;
         mPendingScrollPosition = NO_POSITION;
     }
 
@@ -564,52 +535,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     }
 
 
-    private static class SavedState implements Parcelable {
-        int position;
-        float offset;
-        boolean isReverseLayout;
 
-        SavedState() {
-
-        }
-
-        SavedState(Parcel in) {
-            position = in.readInt();
-            offset = in.readFloat();
-            isReverseLayout = in.readInt() == 1;
-        }
-
-        public SavedState(SavedState other) {
-            position = other.position;
-            offset = other.offset;
-            isReverseLayout = other.isReverseLayout;
-        }
-
-        @Override
-        public int describeContents() {
-            return 0;
-        }
-
-        @Override
-        public void writeToParcel(Parcel dest, int flags) {
-            dest.writeInt(position);
-            dest.writeFloat(offset);
-            dest.writeInt(isReverseLayout ? 1 : 0);
-        }
-
-        public static final Creator<SavedState> CREATOR
-                = new Creator<SavedState>() {
-            @Override
-            public SavedState createFromParcel(Parcel in) {
-                return new SavedState(in);
-            }
-
-            @Override
-            public SavedState[] newArray(int size) {
-                return new SavedState[size];
-            }
-        };
-    }
 
     public interface OnPageChangeListener {
         void onPageSelected(int position);
