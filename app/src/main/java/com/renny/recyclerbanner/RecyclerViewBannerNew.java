@@ -20,17 +20,16 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
+import com.renny.recyclerbanner.layoutmanager.BannerLayoutManager;
+import com.renny.recyclerbanner.layoutmanager.Util;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class RecyclerViewBanner extends FrameLayout {
+public class RecyclerViewBannerNew extends FrameLayout {
 
     private int autoPlayDuration;//刷新间隔时间
 
@@ -43,9 +42,8 @@ public class RecyclerViewBanner extends FrameLayout {
     private int indicatorMargin;//指示器间距
 
     private RecyclerView mRecyclerView;
-    private RecyclerAdapter adapter;
-    private LinearLayoutManager mLinearLayoutManager;
-
+    private BannerAdapter adapter;
+    BannerLayoutManager linearLayoutManager;
     private int WHAT_AUTO_PLAY = 1000;
 
     private boolean hasInit;
@@ -72,26 +70,26 @@ public class RecyclerViewBanner extends FrameLayout {
         }
     });
 
-    public RecyclerViewBanner(Context context) {
+    public RecyclerViewBannerNew(Context context) {
         this(context, null);
     }
 
-    public RecyclerViewBanner(Context context, AttributeSet attrs) {
+    public RecyclerViewBannerNew(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RecyclerViewBanner(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RecyclerViewBannerNew(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView(context, attrs);
     }
 
     private void initView(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerViewBanner);
-        showIndicator = a.getBoolean(R.styleable.RecyclerViewBanner_showIndicator, true);
-        autoPlayDuration = a.getInt(R.styleable.RecyclerViewBanner_interval, 4000);
-        isAutoPlaying = a.getBoolean(R.styleable.RecyclerViewBanner_autoPlaying, true);
-        mSelectedDrawable = a.getDrawable(R.styleable.RecyclerViewBanner_indicatorSelectedSrc);
-        mUnselectedDrawable = a.getDrawable(R.styleable.RecyclerViewBanner_indicatorUnselectedSrc);
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerViewBannerNew);
+        showIndicator = a.getBoolean(R.styleable.RecyclerViewBannerNew_showIndicatorN, true);
+        autoPlayDuration = a.getInt(R.styleable.RecyclerViewBannerNew_intervalN, 4000);
+        isAutoPlaying = a.getBoolean(R.styleable.RecyclerViewBannerNew_autoPlayingN, true);
+        mSelectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerNew_indicatorSelectedSrcN);
+        mUnselectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerNew_indicatorUnselectedSrcN);
         if (mSelectedDrawable == null) {
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
@@ -111,11 +109,11 @@ public class RecyclerViewBanner extends FrameLayout {
             mUnselectedDrawable = new LayerDrawable(new Drawable[]{unSelectedGradientDrawable});
         }
 
-        indicatorMargin = a.getDimensionPixelSize(R.styleable.RecyclerViewBanner_indicatorSpace, dp2px(4));
-        int marginLeft = a.getDimensionPixelSize(R.styleable.RecyclerViewBanner_indicatorMarginLeft, dp2px(16));
-        int marginRight = a.getDimensionPixelSize(R.styleable.RecyclerViewBanner_indicatorMarginRight, dp2px(0));
-        int marginBottom = a.getDimensionPixelSize(R.styleable.RecyclerViewBanner_indicatorMarginBottom, dp2px(11));
-        int g = a.getInt(R.styleable.RecyclerViewBanner_indicatorGravity, 0);
+        indicatorMargin = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorSpaceN, dp2px(4));
+        int marginLeft = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorMarginLeftN, dp2px(16));
+        int marginRight = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorMarginRightN, dp2px(0));
+        int marginBottom = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerNew_indicatorMarginBottomN, dp2px(11));
+        int g = a.getInt(R.styleable.RecyclerViewBannerNew_indicatorGravityN, 0);
         int gravity;
         if (g == 0) {
             gravity = GravityCompat.START;
@@ -135,44 +133,20 @@ public class RecyclerViewBanner extends FrameLayout {
         //recyclerView部分
         mRecyclerView = new RecyclerView(context);
         mRecyclerView.setOverScrollMode(OVER_SCROLL_NEVER);
-        adapter = new RecyclerAdapter();
-        urlList = new ArrayList<>();
-        adapter.setData(urlList);
-        mRecyclerView.setAdapter(adapter);
         new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
-        mLinearLayoutManager = new LinearLayoutManager(context, orientation, false);
-        mRecyclerView.setLayoutManager(mLinearLayoutManager);
+        linearLayoutManager = new BannerLayoutManager(orientation, Util.dp2px(10));
+        mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                //解决连续滑动时指示器不更新的问题
-                if (bannerSize < 2) return;
-                int firstReal = mLinearLayoutManager.findFirstVisibleItemPosition();
-                View viewFirst = mLinearLayoutManager.findViewByPosition(firstReal);
-                float width = getWidth();
-                if (width != 0 && viewFirst != null) {
-                    float right = viewFirst.getRight();
-                    float ratio = right / width;
-                    if (ratio > 0.8) {
-                        if (currentIndex != firstReal) {
-                            currentIndex = firstReal;
-                            refreshIndicator();
-                        }
-                    } else if (ratio < 0.2) {
-                        if (currentIndex != firstReal + 1) {
-                            currentIndex = firstReal + 1;
-                            refreshIndicator();
-                        }
-                    }
-                }
+
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                int first = mLinearLayoutManager.findFirstVisibleItemPosition();
-                int last = mLinearLayoutManager.findLastVisibleItemPosition();
-                if (currentIndex != first && first == last) {
+                int first = linearLayoutManager.getCurrentPosition();
+                if (currentIndex != first) {
                     currentIndex = first;
                     refreshIndicator();
                 }
@@ -254,12 +228,14 @@ public class RecyclerViewBanner extends FrameLayout {
             hasInit = false;
             setVisibility(VISIBLE);
             setPlaying(false);
-            urlList.clear();
-            urlList.addAll(newList);
-            bannerSize = urlList.size();
-            adapter.notifyDataSetChanged();
+            bannerSize = newList.size();
+            adapter = new BannerAdapter(getContext(), newList);
+            mRecyclerView.setAdapter(adapter);
+            urlList = newList;
             if (bannerSize > 1) {
-                indicatorContainer.setVisibility(VISIBLE);
+                if (showIndicator) {
+                    indicatorContainer.setVisibility(VISIBLE);
+                }
                 currentIndex = bannerSize * 10000;
                 mRecyclerView.scrollToPosition(currentIndex);
                 indicatorAdapter.notifyDataSetChanged();
@@ -337,54 +313,7 @@ public class RecyclerViewBanner extends FrameLayout {
         }
     }
 
-    /**
-     * RecyclerView适配器
-     */
-    private class RecyclerAdapter extends RecyclerView.Adapter {
-        List<String> urlList;
 
-        public void setData(List<String> urlList) {
-            this.urlList = urlList;
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ImageView bannerItem = new ImageView(getContext());
-            RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT);
-            bannerItem.setLayoutParams(params);
-            bannerItem.setScaleType(ImageView.ScaleType.FIT_XY);
-            bannerItem.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (onBannerItemClickListener != null) {
-                        onBannerItemClickListener.onItemClick(currentIndex % bannerSize);
-                    }
-                }
-            });
-            return new RecyclerView.ViewHolder(bannerItem) {
-            };
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (urlList == null || urlList.isEmpty())
-                return;
-            String url = urlList.get(position % bannerSize);
-            ImageView img = (ImageView) holder.itemView;
-            Glide.with(getContext()).load(url).into(img);
-        }
-
-        @Override
-        public void onViewRecycled(RecyclerView.ViewHolder holder) {
-            super.onViewRecycled(holder);
-        }
-
-        @Override
-        public int getItemCount() {
-            return bannerSize < 2 ? 1 : Integer.MAX_VALUE;
-        }
-    }
 
     /**
      * RecyclerView适配器
@@ -403,7 +332,7 @@ public class RecyclerViewBanner extends FrameLayout {
             ImageView bannerPoint = new ImageView(getContext());
             RecyclerView.LayoutParams lp = new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT);
-            lp.setMargins(indicatorMargin,indicatorMargin,indicatorMargin,indicatorMargin);
+            lp.setMargins(indicatorMargin, indicatorMargin, indicatorMargin, indicatorMargin);
             bannerPoint.setLayoutParams(lp);
             return new RecyclerView.ViewHolder(bannerPoint) {
             };

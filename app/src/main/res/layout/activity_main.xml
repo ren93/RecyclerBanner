@@ -8,11 +8,18 @@
     android:orientation="vertical"
     tools:context="com.renny.recyclerbanner.MainActivity">
 
-    <com.renny.recyclerbanner.RecyclerViewBanner
+    <com.renny.recyclerbanner.RecyclerViewBannerNew
         android:id="@+id/banner"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
-        app:orientation="vertical"/>
+        android:layout_height="200dp"
+        app:orientationN="horizontal"
+        app:showIndicator="false"/>
 
-
+    <com.renny.recyclerbanner.RecyclerViewBannerNew
+        android:id="@+id/banner2"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="20dp"
+        app:orientationN="vertical"
+        app:showIndicator="false"/>
 </LinearLayout>
