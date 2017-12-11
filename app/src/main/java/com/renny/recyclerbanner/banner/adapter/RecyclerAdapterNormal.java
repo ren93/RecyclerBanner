@@ -22,7 +22,7 @@ public class RecyclerAdapterNormal extends BaseBannerAdapter<RecyclerAdapterNorm
 
     private RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener;
 
-    public RecyclerAdapterNormal(Context context, List urlList,RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener) {
+    public RecyclerAdapterNormal(Context context, List<String> urlList,RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener) {
         super(context, urlList);
         this.onBannerItemClickListener=onBannerItemClickListener;
     }
