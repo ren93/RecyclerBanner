@@ -208,6 +208,7 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
      */
     public void setAutoPlaying(boolean isAutoPlaying) {
         this.isAutoPlaying = isAutoPlaying;
+        setPlaying(this.isAutoPlaying);
     }
 
     public boolean isPlaying() {
