@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         app:orientation="horizontal"
-       />
+        />
 
     <com.renny.recyclerbanner.banner.RecyclerViewBannerNew
         android:id="@+id/banner2"
@@ -21,14 +21,15 @@
         android:layout_height="200dp"
         android:layout_marginTop="20dp"
         app:orientation="vertical"
-      />
+        app:showIndicator="false"
+        />
 
     <Button
-        android:layout_marginTop="20dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
         android:onClick="jump"
         android:text="查看基础版"
-        android:layout_gravity="center_horizontal"
         />
 </LinearLayout>

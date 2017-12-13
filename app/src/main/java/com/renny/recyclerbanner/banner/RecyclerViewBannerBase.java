@@ -249,6 +249,9 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
             }
             hasInit = true;
         }
+        if (!showIndicator) {
+            indicatorContainer.setVisibility(GONE);
+        }
     }
 
     /**
