@@ -169,9 +169,13 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         }
     }
 
-    protected abstract void onBannerScrolled(RecyclerView recyclerView, int dx, int dy);
+    protected void onBannerScrolled(RecyclerView recyclerView, int dx, int dy) {
 
-    protected abstract void onBannerScrollStateChanged(RecyclerView recyclerView, int newState);
+    }
+
+    protected  void onBannerScrollStateChanged(RecyclerView recyclerView, int newState){
+
+    }
 
     protected abstract L getLayoutManager(Context context, int orientation);
 

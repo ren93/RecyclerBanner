@@ -9,25 +9,19 @@ import com.renny.recyclerbanner.banner.layoutmanager.BannerLayoutManager;
 
 import java.util.List;
 
-public class RecyclerViewBannerNew extends RecyclerViewBannerBase<BannerLayoutManager, MzBannerAdapter> {
+public class RecyclerViewBannerMz extends RecyclerViewBannerBase<BannerLayoutManager, MzBannerAdapter> {
 
 
-    public RecyclerViewBannerNew(Context context) {
+    public RecyclerViewBannerMz(Context context) {
         this(context, null);
     }
 
-    public RecyclerViewBannerNew(Context context, AttributeSet attrs) {
+    public RecyclerViewBannerMz(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RecyclerViewBannerNew(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RecyclerViewBannerMz(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-
-    }
-
-    @Override
-    protected void onBannerScrolled(RecyclerView recyclerView, int dx, int dy) {
-
     }
 
     @Override

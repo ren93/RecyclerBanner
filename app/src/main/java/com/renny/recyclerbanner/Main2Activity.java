@@ -4,14 +4,14 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.renny.recyclerbanner.banner.NormalRecyclerViewBanner;
+import com.renny.recyclerbanner.banner.RecyclerViewBannerNormal;
 import com.renny.recyclerbanner.banner.RecyclerViewBannerBase;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main2Activity extends AppCompatActivity {
-    NormalRecyclerViewBanner banner, banner2;
+    RecyclerViewBannerNormal banner, banner2;
 
 
     @Override
@@ -31,7 +31,13 @@ public class Main2Activity extends AppCompatActivity {
                 Toast.makeText(Main2Activity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
             }
         });
-        banner2.initBannerImageView(list);
+        banner2.initBannerImageView(list, new RecyclerViewBannerBase.OnBannerItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                Toast.makeText(Main2Activity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
+            }
+        });
+     
     }
 
 }

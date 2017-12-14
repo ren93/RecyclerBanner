@@ -10,17 +10,17 @@ import com.renny.recyclerbanner.banner.adapter.RecyclerAdapterNormal;
 
 import java.util.List;
 
-public class NormalRecyclerViewBanner extends RecyclerViewBannerBase<LinearLayoutManager, RecyclerAdapterNormal> {
+public class RecyclerViewBannerNormal extends RecyclerViewBannerBase<LinearLayoutManager, RecyclerAdapterNormal> {
 
-    public NormalRecyclerViewBanner(Context context) {
+    public RecyclerViewBannerNormal(Context context) {
         this(context, null);
     }
 
-    public NormalRecyclerViewBanner(Context context, AttributeSet attrs) {
+    public RecyclerViewBannerNormal(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public NormalRecyclerViewBanner(Context context, AttributeSet attrs, int defStyleAttr) {
+    public RecyclerViewBannerNormal(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
 
     }
