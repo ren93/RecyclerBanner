@@ -10,7 +10,7 @@ import com.renny.recyclerbanner.banner.RecyclerViewBannerBase;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main2Activity extends AppCompatActivity {
+public class NormalActivity extends AppCompatActivity {
     RecyclerViewBannerNormal banner, banner2;
 
 
@@ -28,16 +28,16 @@ public class Main2Activity extends AppCompatActivity {
         banner.initBannerImageView(list, new RecyclerViewBannerBase.OnBannerItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(Main2Activity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(NormalActivity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
             }
         });
         banner2.initBannerImageView(list, new RecyclerViewBannerBase.OnBannerItemClickListener() {
             @Override
             public void onItemClick(int position) {
-                Toast.makeText(Main2Activity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(NormalActivity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
             }
         });
-     
+
     }
 
 }

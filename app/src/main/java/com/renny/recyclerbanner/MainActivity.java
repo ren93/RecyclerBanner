@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "clicked:" + position, Toast.LENGTH_SHORT).show();
             }
         });
+
         banner2.initBannerImageView(list, new RecyclerViewBannerBase.OnBannerItemClickListener() {
             @Override
             public void onItemClick(int position) {
@@ -45,6 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void jump(View view) {
-        startActivity(new Intent(MainActivity.this,Main2Activity.class));
+        startActivity(new Intent(MainActivity.this,NormalActivity.class));
     }
 }

@@ -6,11 +6,11 @@ import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
 
-import com.renny.recyclerbanner.banner.adapter.RecyclerAdapterNormal;
+import com.renny.recyclerbanner.banner.adapter.NormalRecyclerAdapter;
 
 import java.util.List;
 
-public class RecyclerViewBannerNormal extends RecyclerViewBannerBase<LinearLayoutManager, RecyclerAdapterNormal> {
+public class RecyclerViewBannerNormal extends RecyclerViewBannerBase<LinearLayoutManager, NormalRecyclerAdapter> {
 
     public RecyclerViewBannerNormal(Context context) {
         this(context, null);
@@ -66,8 +66,8 @@ public class RecyclerViewBannerNormal extends RecyclerViewBannerBase<LinearLayou
     }
 
     @Override
-    protected RecyclerAdapterNormal getAdapter(Context context, List<String> list,OnBannerItemClickListener onBannerItemClickListener) {
-        return new RecyclerAdapterNormal(context, list,onBannerItemClickListener);
+    protected NormalRecyclerAdapter getAdapter(Context context, List<String> list, OnBannerItemClickListener onBannerItemClickListener) {
+        return new NormalRecyclerAdapter(context, list,onBannerItemClickListener);
     }
 
 

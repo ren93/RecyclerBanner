@@ -55,8 +55,6 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
     protected boolean isAutoPlaying;
     protected List<String> tempUrlList = new ArrayList<>();
 
-    protected OnBannerItemClickListener onBannerItemClickListener;
-
 
     protected Handler mHandler = new Handler(new Handler.Callback() {
         @Override
@@ -222,10 +220,6 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
     public void setShowIndicator(boolean showIndicator) {
         this.showIndicator = showIndicator;
         indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
-    }
-
-    public void setOnBannerItemClickListener(OnBannerItemClickListener onBannerItemClickListener) {
-        this.onBannerItemClickListener = onBannerItemClickListener;
     }
 
     /**

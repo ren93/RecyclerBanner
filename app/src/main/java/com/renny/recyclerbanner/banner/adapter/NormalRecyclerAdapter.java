@@ -18,17 +18,17 @@ import java.util.List;
 /**
  * RecyclerView适配器
  */
-public class RecyclerAdapterNormal extends BaseBannerAdapter<RecyclerAdapterNormal.NormalHolder> {
+public class NormalRecyclerAdapter extends BaseBannerAdapter<NormalRecyclerAdapter.NormalHolder> {
 
     private RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener;
 
-    public RecyclerAdapterNormal(Context context, List<String> urlList,RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener) {
+    public NormalRecyclerAdapter(Context context, List<String> urlList, RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener) {
         super(context, urlList);
         this.onBannerItemClickListener=onBannerItemClickListener;
     }
 
     @Override
-    protected RecyclerAdapterNormal.NormalHolder createCustomViewHolder(ViewGroup parent, int viewType) {
+    protected NormalRecyclerAdapter.NormalHolder createCustomViewHolder(ViewGroup parent, int viewType) {
         return new NormalHolder(new ImageView(context));
     }
 
