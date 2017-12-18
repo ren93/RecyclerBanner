@@ -35,12 +35,16 @@ public class RecyclerViewBannerMz extends RecyclerViewBannerBase<BannerLayoutMan
 
     @Override
     protected BannerLayoutManager getLayoutManager(Context context, int orientation) {
-        return new BannerLayoutManager(orientation, dp2px(10));
+        BannerLayoutManager bannerLayoutManager = new BannerLayoutManager(context, orientation);
+        //请根据图片大小作相应调整，不然可能会出现一些显示问题
+        bannerLayoutManager.setItemSpace(dp2px(15));//图片间距
+        bannerLayoutManager.setCenterScale(1.2f);//中间图片缩放比例
+        return bannerLayoutManager;
     }
 
     @Override
-    protected MzBannerAdapter getAdapter(Context context, List<String> list,OnBannerItemClickListener onBannerItemClickListener) {
-        return new MzBannerAdapter(context, list,onBannerItemClickListener);
+    protected MzBannerAdapter getAdapter(Context context, List<String> list, OnBannerItemClickListener onBannerItemClickListener) {
+        return new MzBannerAdapter(context, list, onBannerItemClickListener);
     }
 
 

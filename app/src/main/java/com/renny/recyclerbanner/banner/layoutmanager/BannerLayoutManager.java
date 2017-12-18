@@ -1,6 +1,10 @@
 package com.renny.recyclerbanner.banner.layoutmanager;
 
+import android.content.Context;
 import android.graphics.PointF;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.RecyclerView;
@@ -9,36 +13,54 @@ import android.view.ViewGroup;
 
 import static android.support.v7.widget.RecyclerView.NO_POSITION;
 
+/**
+ * An implementation of {@link RecyclerView.LayoutManager} which behaves like view pager.
+ * Please make sure your child view have the same size.
+ */
 
-public class BannerLayoutManager extends RecyclerView.LayoutManager implements RecyclerView.SmoothScroller.ScrollVectorProvider {
+@SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue"})
+public class BannerLayoutManager extends LinearLayoutManager
+        implements RecyclerView.SmoothScroller.ScrollVectorProvider {
 
-    private static final float SCALE_RATE = 1.2f;
-    private int mOrientation = HORIZONTAL;
+    public static final int DETERMINE_BY_MAX_AND_MIN = -1;
 
-    private static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
-    static final int VERTICAL = OrientationHelper.VERTICAL;
+    public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
 
-    private int mDecoratedMeasurement;
+    public static final int VERTICAL = OrientationHelper.VERTICAL;
 
-    private int mDecoratedMeasurementInOther;
+    protected int mDecoratedMeasurement;
 
-    private int itemSpace;
+    protected int mDecoratedMeasurementInOther;
 
-    private int mSpaceMain;
+    private int itemSpace = 20;
 
-    private int mSpaceInOther;
+    private float centerScale = 1.2f;
+    /**
+     * Current orientation. Either {@link #HORIZONTAL} or {@link #VERTICAL}
+     */
+    int mOrientation;
+
+    protected int mSpaceMain;
+
+    protected int mSpaceInOther;
 
     /**
      * The offset of property which will change while scrolling
      */
-    private float mOffset;
+    protected float mOffset;
 
     /**
      * Many calculations are made depending on orientation. To keep it clean, this interface
      * helps {@link LinearLayoutManager} make those decisions.
      * Based on {@link #mOrientation}, an implementation is lazily created in
+     * {@link #ensureLayoutState} method.
      */
-    private OrientationHelper mOrientationHelper;
+    protected OrientationHelper mOrientationHelper;
+
+    /**
+     * Defines if layout should be calculated from end to start.
+     */
+    private boolean mReverseLayout = false;
 
     /**
      * Works the same way as {@link android.widget.AbsListView#setSmoothScrollbarEnabled(boolean)}.
@@ -52,36 +74,48 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      */
     private int mPendingScrollPosition = NO_POSITION;
 
+    private SavedState mPendingSavedState = null;
 
-    private float mInterval; //the mInterval of each item's mOffset
+    protected float mInterval; //the mInterval of each item's mOffset
 
-    OnPageChangeListener onPageChangeListener;
+    /* package */ OnPageChangeListener onPageChangeListener;
+
+    private boolean mRecycleChildrenOnDetach;
 
     private boolean mInfinite = false;
+
+    private boolean mEnableBringCenterToFront;
+
+    /**
+     * ugly code for fix bug caused by float
+     */
+    private boolean mIntegerDy = true;
 
     private int mLeftItems;
 
     private int mRightItems;
 
-
-    public BannerLayoutManager() {
-        this(HORIZONTAL, 0);
-    }
-
-
-    public BannerLayoutManager(int orientation, int itemSpace) {
-        this.itemSpace = itemSpace;
-        setOrientation(orientation);
-        setAutoMeasureEnabled(true);
-    }
+    /**
+     * max visible item count
+     */
+    private int mMaxVisibleItemCount = DETERMINE_BY_MAX_AND_MIN;
 
     /**
      * @return the mInterval of each item's mOffset
      */
-    private float setInterval() {
-        return mDecoratedMeasurement * ((1.2f - 1) / 2 + 1) + itemSpace;
+    protected float setInterval() {
+        return mDecoratedMeasurement * ((centerScale - 1) / 2 + 1) + itemSpace;
     }
 
+    public void setCenterScale(float centerScale) {
+        this.centerScale = centerScale;
+    }
+
+    protected void setItemViewProperty(View itemView, float targetOffset) {
+        float scale = calculateScale(targetOffset + mSpaceMain);
+        itemView.setScaleX(scale);
+        itemView.setScaleY(scale);
+    }
 
     /**
      * @param x start positon of the view you want scale
@@ -91,7 +125,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
         float deltaX = Math.abs(x - (mOrientationHelper.getTotalSpace() - mDecoratedMeasurement) / 2f);
         float diff = 0f;
         if ((mDecoratedMeasurement - deltaX) > 0) diff = mDecoratedMeasurement - deltaX;
-        return (SCALE_RATE - 1f) / mDecoratedMeasurement * diff + 1;
+        return (centerScale - 1f) / mDecoratedMeasurement * diff + 1;
     }
 
     /**
@@ -99,8 +133,38 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      * so you can set your elevation here for supporting it below api 21
      * or you can just setElevation in {@link #setItemViewProperty(View, float)}
      */
-    private float setViewElevation(View itemView, float targetOffset) {
+    protected float setViewElevation(View itemView, float targetOffset) {
         return 0;
+    }
+
+    /**
+     * Creates a horizontal ViewPagerLayoutManager
+     */
+    public BannerLayoutManager(Context context) {
+        this(context, HORIZONTAL, false);
+    }
+
+    /**
+     * Creates a horizontal ViewPagerLayoutManager
+     */
+    public BannerLayoutManager(Context context, int orientation) {
+        this(context, orientation, false);
+    }
+
+    /**
+     * @param orientation   Layout orientation. Should be {@link #HORIZONTAL} or {@link #VERTICAL}
+     * @param reverseLayout When set to true, layouts from end to start
+     */
+    public BannerLayoutManager(Context context, int orientation, boolean reverseLayout) {
+        super(context);
+        setOrientation(orientation);
+        setReverseLayout(reverseLayout);
+        setAutoMeasureEnabled(true);
+    }
+
+    public void setItemSpace(int itemSpace) {
+        this.itemSpace = itemSpace;
+        requestLayout();
     }
 
     @Override
@@ -109,7 +173,62 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
                 ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
+    /**
+     * Returns whether LayoutManager will recycle its children when it is detached from
+     * RecyclerView.
+     *
+     * @return true if LayoutManager will recycle its children when it is detached from
+     * RecyclerView.
+     */
+    public boolean getRecycleChildrenOnDetach() {
+        return mRecycleChildrenOnDetach;
+    }
 
+    /**
+     * Set whether LayoutManager will recycle its children when it is detached from
+     * RecyclerView.
+     * <p>
+     * If you are using a {@link RecyclerView.RecycledViewPool}, it might be a good idea to set
+     * this flag to <code>true</code> so that views will be available to other RecyclerViews
+     * immediately.
+     * <p>
+     * Note that, setting this flag will result in a performance drop if RecyclerView
+     * is restored.
+     *
+     * @param recycleChildrenOnDetach Whether children should be recycled in detach or not.
+     */
+    public void setRecycleChildrenOnDetach(boolean recycleChildrenOnDetach) {
+        mRecycleChildrenOnDetach = recycleChildrenOnDetach;
+    }
+
+    @Override
+    public void onDetachedFromWindow(RecyclerView view, RecyclerView.Recycler recycler) {
+        super.onDetachedFromWindow(view, recycler);
+        if (mRecycleChildrenOnDetach) {
+            removeAndRecycleAllViews(recycler);
+            recycler.clear();
+        }
+    }
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+        if (mPendingSavedState != null) {
+            return new SavedState(mPendingSavedState);
+        }
+        SavedState savedState = new SavedState();
+        savedState.position = mPendingScrollPosition;
+        savedState.offset = mOffset;
+        savedState.isReverseLayout = mReverseLayout;
+        return savedState;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+        if (state instanceof SavedState) {
+            mPendingSavedState = new SavedState((SavedState) state);
+            requestLayout();
+        }
+    }
 
     /**
      * @return true if {@link #getOrientation()} is {@link #HORIZONTAL}
@@ -133,7 +252,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      * @return Current orientation,  either {@link #HORIZONTAL} or {@link #VERTICAL}
      * @see #setOrientation(int)
      */
-    int getOrientation() {
+    public int getOrientation() {
         return mOrientation;
     }
 
@@ -143,7 +262,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      *
      * @param orientation {@link #HORIZONTAL} or {@link #VERTICAL}
      */
-    void setOrientation(int orientation) {
+    public void setOrientation(int orientation) {
         if (orientation != HORIZONTAL && orientation != VERTICAL) {
             throw new IllegalArgumentException("invalid orientation:" + orientation);
         }
@@ -156,21 +275,81 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
         removeAllViews();
     }
 
-    @Override
-    public View findViewByPosition(int position) {
-        final int childCount = getChildCount();
-        if (childCount == 0) {
-            return null;
+    /**
+     * Returns the max visible item count, {@link #DETERMINE_BY_MAX_AND_MIN} means it haven't been set now
+     * And it will use {@link #maxRemoveOffset()} and {@link #minRemoveOffset()} to handle the range
+     *
+     * @return Max visible item count
+     */
+    public int getMaxVisibleItemCount() {
+        return mMaxVisibleItemCount;
+    }
+
+    /**
+     * Set the max visible item count, {@link #DETERMINE_BY_MAX_AND_MIN} means it haven't been set now
+     * And it will use {@link #maxRemoveOffset()} and {@link #minRemoveOffset()} to handle the range
+     *
+     * @param mMaxVisibleItemCount Max visible item count
+     */
+    public void setMaxVisibleItemCount(int mMaxVisibleItemCount) {
+        assertNotInLayoutOrScroll(null);
+        if (this.mMaxVisibleItemCount == mMaxVisibleItemCount) return;
+        this.mMaxVisibleItemCount = mMaxVisibleItemCount;
+        removeAllViews();
+    }
+
+    /**
+     * see {@link #mIntegerDy}
+     */
+    public boolean isIntegerDy() {
+        return mIntegerDy;
+    }
+
+    /**
+     * see {@link #mIntegerDy}
+     */
+    public void setIntegerDy(boolean mIntegerDy) {
+        this.mIntegerDy = mIntegerDy;
+    }
+
+    /**
+     * Calculates the view layout order. (e.g. from end to start or start to end)
+     * RTL layout support is applied automatically. So if layout is RTL and
+     * {@link #getReverseLayout()} is {@code true}, elements will be laid out starting from left.
+     */
+    private void resolveShouldLayoutReverse() {
+        if (mOrientation == HORIZONTAL && getLayoutDirection() == ViewCompat.LAYOUT_DIRECTION_RTL) {
+            mReverseLayout = !mReverseLayout;
         }
-        final int firstChild = getPosition(getChildAt(0));
-        final int viewPosition = position - firstChild;
-        if (viewPosition >= 0 && viewPosition < childCount) {
-            final View child = getChildAt(viewPosition);
-            if (getPosition(child) == position) {
-                return child; // in pre-layout, this may not match
-            }
+    }
+
+    /**
+     * Returns if views are laid out from the opposite direction of the layout.
+     *
+     * @return If layout is reversed or not.
+     * @see #setReverseLayout(boolean)
+     */
+    public boolean getReverseLayout() {
+        return mReverseLayout;
+    }
+
+    /**
+     * Used to reverse item traversal and layout order.
+     * This behaves similar to the layout change for RTL views. When set to true, first item is
+     * laid out at the end of the UI, second item is laid out before it etc.
+     * <p>
+     * For horizontal layouts, it depends on the layout direction.
+     * When set to true, If {@link android.support.v7.widget.RecyclerView} is LTR, than it will
+     * layout from RTL, if {@link android.support.v7.widget.RecyclerView}} is RTL, it will layout
+     * from LTR.
+     */
+    public void setReverseLayout(boolean reverseLayout) {
+        assertNotInLayoutOrScroll(null);
+        if (reverseLayout == mReverseLayout) {
+            return;
         }
-        return super.findViewByPosition(position);
+        mReverseLayout = reverseLayout;
+        removeAllViews();
     }
 
     @Override
@@ -185,7 +364,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
             return null;
         }
         final int firstChildPos = getPosition(getChildAt(0));
-        final float direction = targetPosition < firstChildPos ?
+        final float direction = targetPosition < firstChildPos == !mReverseLayout ?
                 -1 / getDistanceRatio() : 1 / getDistanceRatio();
         if (mOrientation == HORIZONTAL) {
             return new PointF(direction, 0);
@@ -201,23 +380,33 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
             mOffset = 0;
             return;
         }
-        if (mOrientationHelper == null) {
-            mOrientationHelper = OrientationHelper.createOrientationHelper(this, mOrientation);
+
+        ensureLayoutState();
+        resolveShouldLayoutReverse();
+
+        //make sure properties are correct while measure more than once
+        View scrap = recycler.getViewForPosition(0);
+        measureChildWithMargins(scrap, 0, 0);
+        mDecoratedMeasurement = mOrientationHelper.getDecoratedMeasurement(scrap);
+        mDecoratedMeasurementInOther = mOrientationHelper.getDecoratedMeasurementInOther(scrap);
+        mSpaceMain = (mOrientationHelper.getTotalSpace() - mDecoratedMeasurement) / 2;
+        mSpaceInOther = (mOrientationHelper.getTotalSpaceInOther() - mDecoratedMeasurementInOther) / 2;
+        mInterval = setInterval();
+        setUp();
+        mLeftItems = (int) Math.abs(minRemoveOffset() / mInterval) + 1;
+        mRightItems = (int) Math.abs(maxRemoveOffset() / mInterval) + 1;
+
+        if (mPendingSavedState != null) {
+            mReverseLayout = mPendingSavedState.isReverseLayout;
+            mPendingScrollPosition = mPendingSavedState.position;
+            mOffset = mPendingSavedState.offset;
         }
-        if (getChildCount() == 0) {
-            View scrap = recycler.getViewForPosition(0);
-            measureChildWithMargins(scrap, 0, 0);
-            mDecoratedMeasurement = mOrientationHelper.getDecoratedMeasurement(scrap);
-            mDecoratedMeasurementInOther = mOrientationHelper.getDecoratedMeasurementInOther(scrap);
-            mSpaceMain = (mOrientationHelper.getTotalSpace() - mDecoratedMeasurement) / 2;
-            mSpaceInOther = (mOrientationHelper.getTotalSpaceInOther() - mDecoratedMeasurementInOther) / 2;
-            mInterval = setInterval();
-            mLeftItems = (int) Math.abs(minRemoveOffset() / mInterval) + 1;
-            mRightItems = (int) Math.abs(maxRemoveOffset() / mInterval) + 1;
-        }
+
         if (mPendingScrollPosition != NO_POSITION) {
-            mOffset = mPendingScrollPosition * mInterval;
+            mOffset = mReverseLayout ?
+                    mPendingScrollPosition * -mInterval : mPendingScrollPosition * mInterval;
         }
+
         detachAndScrapAttachedViews(recycler);
         layoutItems(recycler);
     }
@@ -225,12 +414,25 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     @Override
     public void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
+        mPendingSavedState = null;
         mPendingScrollPosition = NO_POSITION;
     }
 
+    void ensureLayoutState() {
+        if (mOrientationHelper == null) {
+            mOrientationHelper = OrientationHelper.createOrientationHelper(this, mOrientation);
+        }
+    }
+
+    /**
+     * You can set up your own properties here or change the exist properties like mSpaceMain and mSpaceInOther
+     */
+    protected void setUp() {
+
+    }
 
     private float getProperty(int position) {
-        return position * mInterval;
+        return mReverseLayout ? position * -mInterval : position * mInterval;
     }
 
     @Override
@@ -242,7 +444,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     @Override
     public void scrollToPosition(int position) {
         mPendingScrollPosition = position;
-        mOffset = position * mInterval;
+        mOffset = mReverseLayout ? position * -mInterval : position * mInterval;
         requestLayout();
     }
 
@@ -282,11 +484,12 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
         }
 
         if (!mSmoothScrollbarEnabled) {
-            return getItemCount() - getCurrentPosition() - 1;
+            return !mReverseLayout ?
+                    getCurrentPosition() : getItemCount() - getCurrentPosition() - 1;
         }
 
         final float realOffset = getOffsetOfRightAdapterPosition();
-        return (int) realOffset;
+        return !mReverseLayout ? (int) realOffset : (int) ((getItemCount() - 1) * mInterval + realOffset);
     }
 
     private int computeScrollExtent() {
@@ -333,9 +536,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
         if (getChildCount() == 0 || dy == 0) {
             return 0;
         }
-        if (mOrientationHelper == null) {
-            mOrientationHelper = OrientationHelper.createOrientationHelper(this, mOrientation);
-        }
+        ensureLayoutState();
         int willScroll = dy;
 
         float realDx = dy / getDistanceRatio();
@@ -351,8 +552,11 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
             willScroll = (int) ((getMaxOffset() - mOffset) * getDistanceRatio());
         }
 
-
-        realDx = willScroll / getDistanceRatio();
+        if (mIntegerDy) {
+            realDx = (int) (willScroll / getDistanceRatio());
+        } else {
+            realDx = willScroll / getDistanceRatio();
+        }
 
         mOffset += realDx;
 
@@ -370,30 +574,41 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     }
 
     private void layoutItems(RecyclerView.Recycler recycler) {
-        final float rightOffset = getOffsetOfRightAdapterPosition();
-        for (int i = 0; i < getChildCount(); i++) {
-            final View view = getChildAt(i);
-            final int position = getPosition(view);
-            if (removeCondition(getProperty(position) - rightOffset)) {
-                removeAndRecycleView(view, recycler);
-            }
-        }
+        detachAndScrapAttachedViews(recycler);
 
-        //make sure that current position start from 0 to 1
-        final int currentPos = getCurrentPositionOffset();
+        // make sure that current position start from 0 to 1
+        final int currentPos = mReverseLayout ?
+                -getCurrentPositionOffset() : getCurrentPositionOffset();
         int start = currentPos - mLeftItems;
         int end = currentPos + mRightItems;
 
+        // handle max visible count
+        if (useMaxVisibleCount()) {
+            boolean isEven = mMaxVisibleItemCount % 2 == 0;
+            if (isEven) {
+                int offset = mMaxVisibleItemCount / 2;
+                start = currentPos - offset + 1;
+                end = currentPos + offset + 1;
+            } else {
+                int offset = (mMaxVisibleItemCount - 1) / 2;
+                start = currentPos - offset;
+                end = currentPos + offset + 1;
+            }
+        }
+
         final int itemCount = getItemCount();
         if (!mInfinite) {
-            if (start < 0) start = 0;
+            if (start < 0) {
+                start = 0;
+                if (useMaxVisibleCount()) end = mMaxVisibleItemCount;
+            }
             if (end > itemCount) end = itemCount;
         }
 
         float lastOrderWeight = Float.MIN_VALUE;
         for (int i = start; i < end; i++) {
-            if (!removeCondition(getProperty(i) - mOffset)) {
-                // start and end zero base on current position,
+            if (useMaxVisibleCount() || !removeCondition(getProperty(i) - mOffset)) {
+                // start and end base on current position,
                 // so we need to calculate the adapter position
                 int adapterPosition = i;
                 if (i >= itemCount) {
@@ -403,22 +618,26 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
                     if (delta == 0) delta = itemCount;
                     adapterPosition = itemCount - delta;
                 }
-                if (findViewByPosition(adapterPosition) == null) {
-                    final View scrap = recycler.getViewForPosition(adapterPosition);
-                    measureChildWithMargins(scrap, 0, 0);
-                    resetViewProperty(scrap);
-                    // we need i to calculate the real offset of current view
-                    final float targetOffset = getProperty(i) - mOffset;
-                    layoutScrap(scrap, targetOffset);
-                    if ((float) adapterPosition > lastOrderWeight) {
-                        addView(scrap);
-                    } else {
-                        addView(scrap, 0);
-                    }
-                    lastOrderWeight = (float) adapterPosition;
+                final View scrap = recycler.getViewForPosition(adapterPosition);
+                measureChildWithMargins(scrap, 0, 0);
+                resetViewProperty(scrap);
+                // we need i to calculate the real offset of current view
+                final float targetOffset = getProperty(i) - mOffset;
+                layoutScrap(scrap, targetOffset);
+                final float orderWeight = mEnableBringCenterToFront ?
+                        setViewElevation(scrap, targetOffset) : adapterPosition;
+                if (orderWeight > lastOrderWeight) {
+                    addView(scrap);
+                } else {
+                    addView(scrap, 0);
                 }
+                lastOrderWeight = orderWeight;
             }
         }
+    }
+
+    private boolean useMaxVisibleCount() {
+        return mMaxVisibleItemCount != DETERMINE_BY_MAX_AND_MIN;
     }
 
     private boolean removeCondition(float targetOffset) {
@@ -435,11 +654,11 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
     }
 
     private float getMaxOffset() {
-        return (getItemCount() - 1) * mInterval;
+        return !mReverseLayout ? (getItemCount() - 1) * mInterval : 0;
     }
 
     private float getMinOffset() {
-        return 0;
+        return !mReverseLayout ? 0 : -(getItemCount() - 1) * mInterval;
     }
 
     private void layoutScrap(View scrap, float targetOffset) {
@@ -455,17 +674,11 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
         setItemViewProperty(scrap, targetOffset);
     }
 
-    private void setItemViewProperty(View itemView, float targetOffset) {
-        float scale = calculateScale(targetOffset + mSpaceMain);
-        itemView.setScaleX(scale);
-        itemView.setScaleY(scale);
-    }
-
-    private int calItemLeft(View itemView, float targetOffset) {
+    protected int calItemLeft(View itemView, float targetOffset) {
         return mOrientation == VERTICAL ? 0 : (int) targetOffset;
     }
 
-    private int calItemTop(View itemView, float targetOffset) {
+    protected int calItemTop(View itemView, float targetOffset) {
         return mOrientation == VERTICAL ? (int) targetOffset : 0;
     }
 
@@ -473,7 +686,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      * when the target offset reach this,
      * the view will be removed and recycled in {@link #layoutItems(RecyclerView.Recycler)}
      */
-    private float maxRemoveOffset() {
+    protected float maxRemoveOffset() {
         return mOrientationHelper.getTotalSpace() - mSpaceMain;
     }
 
@@ -481,24 +694,31 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      * when the target offset reach this,
      * the view will be removed and recycled in {@link #layoutItems(RecyclerView.Recycler)}
      */
-    private float minRemoveOffset() {
+    protected float minRemoveOffset() {
         return -mDecoratedMeasurement - mOrientationHelper.getStartAfterPadding() - mSpaceMain;
     }
 
-    private float propertyChangeWhenScroll(View itemView) {
+    protected float propertyChangeWhenScroll(View itemView) {
         if (mOrientation == VERTICAL)
             return itemView.getTop() - mSpaceMain;
         return itemView.getLeft() - mSpaceMain;
     }
 
-    private float getDistanceRatio() {
+    protected float getDistanceRatio() {
         return 1f;
     }
 
     public int getCurrentPosition() {
         int position = getCurrentPositionOffset();
         if (!mInfinite) return Math.abs(position);
-        position = (position >= 0 ? position % getItemCount() : getItemCount() + position % getItemCount());
+        position = !mReverseLayout ?
+                //take care of position = getItemCount()
+                (position >= 0 ?
+                        position % getItemCount() :
+                        getItemCount() + position % getItemCount()) :
+                (position > 0 ?
+                        getItemCount() - position % getItemCount() :
+                        -position % getItemCount());
         return position;
     }
 
@@ -511,11 +731,18 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
      * cause when {@link #mInfinite} is set true, there will be no limitation of {@link #mOffset}
      */
     private float getOffsetOfRightAdapterPosition() {
-        return mInfinite ?
-                (mOffset >= 0 ?
-                        (mOffset % (mInterval * getItemCount())) :
-                        (getItemCount() * mInterval + mOffset % (mInterval * getItemCount()))) :
-                mOffset;
+        if (mReverseLayout)
+            return mInfinite ?
+                    (mOffset <= 0 ?
+                            (mOffset % (mInterval * getItemCount())) :
+                            (getItemCount() * -mInterval + mOffset % (mInterval * getItemCount()))) :
+                    mOffset;
+        else
+            return mInfinite ?
+                    (mOffset >= 0 ?
+                            (mOffset % (mInterval * getItemCount())) :
+                            (getItemCount() * mInterval + mOffset % (mInterval * getItemCount()))) :
+                    mOffset;
     }
 
     /**
@@ -527,15 +754,115 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager implements R
         if (mInfinite)
             return (int) ((getCurrentPositionOffset() * mInterval - mOffset) * getDistanceRatio());
         return (int) ((getCurrentPosition() *
-                (mInterval) - mOffset) * getDistanceRatio());
+                (!mReverseLayout ? mInterval : -mInterval) - mOffset) * getDistanceRatio());
     }
 
     public void setOnPageChangeListener(OnPageChangeListener onPageChangeListener) {
         this.onPageChangeListener = onPageChangeListener;
     }
 
+    public void setInfinite(boolean enable) {
+        assertNotInLayoutOrScroll(null);
+        if (enable == mInfinite) {
+            return;
+        }
+        mInfinite = enable;
+        requestLayout();
+    }
 
+    public boolean getInfinite() {
+        return mInfinite;
+    }
 
+    /**
+     * When smooth scrollbar is enabled, the position and size of the scrollbar thumb is computed
+     * based on the number of visible pixels in the visible items. This however assumes that all
+     * list items have similar or equal widths or heights (depending on list orientation).
+     * If you use a list in which items have different dimensions, the scrollbar will change
+     * appearance as the user scrolls through the list. To avoid this issue,  you need to disable
+     * this property.
+     * <p>
+     * When smooth scrollbar is disabled, the position and size of the scrollbar thumb is based
+     * solely on the number of items in the adapter and the position of the visible items inside
+     * the adapter. This provides a stable scrollbar as the user navigates through a list of items
+     * with varying widths / heights.
+     *
+     * @param enabled Whether or not to enable smooth scrollbar.
+     * @see #setSmoothScrollbarEnabled(boolean)
+     */
+    public void setSmoothScrollbarEnabled(boolean enabled) {
+        mSmoothScrollbarEnabled = enabled;
+    }
+
+    public void setEnableBringCenterToFront(boolean bringCenterToTop) {
+        assertNotInLayoutOrScroll(null);
+        if (mEnableBringCenterToFront == bringCenterToTop) {
+            return;
+        }
+        this.mEnableBringCenterToFront = bringCenterToTop;
+        requestLayout();
+    }
+
+    public boolean getEnableBringCenterToFront() {
+        return mEnableBringCenterToFront;
+    }
+
+    /**
+     * Returns the current state of the smooth scrollbar feature. It is enabled by default.
+     *
+     * @return True if smooth scrollbar is enabled, false otherwise.
+     * @see #setSmoothScrollbarEnabled(boolean)
+     */
+    public boolean getSmoothScrollbarEnabled() {
+        return mSmoothScrollbarEnabled;
+    }
+
+    private static class SavedState implements Parcelable {
+        int position;
+        float offset;
+        boolean isReverseLayout;
+
+        SavedState() {
+
+        }
+
+        SavedState(Parcel in) {
+            position = in.readInt();
+            offset = in.readFloat();
+            isReverseLayout = in.readInt() == 1;
+        }
+
+        public SavedState(SavedState other) {
+            position = other.position;
+            offset = other.offset;
+            isReverseLayout = other.isReverseLayout;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeInt(position);
+            dest.writeFloat(offset);
+            dest.writeInt(isReverseLayout ? 1 : 0);
+        }
+
+        public static final Creator<SavedState> CREATOR
+                = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
+    }
 
     public interface OnPageChangeListener {
         void onPageSelected(int position);
