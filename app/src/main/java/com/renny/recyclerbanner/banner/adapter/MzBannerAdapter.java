@@ -9,7 +9,7 @@ import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
 import com.renny.recyclerbanner.R;
-import com.renny.recyclerbanner.banner.RecyclerViewBannerBase;
+import com.renny.recyclerbanner.banner.BannerLayout;
 
 import java.util.List;
 
@@ -18,36 +18,50 @@ import java.util.List;
  */
 
 
-public class MzBannerAdapter extends BaseBannerAdapter<MzBannerAdapter.MzViewHolder> {
+public class MzBannerAdapter extends RecyclerView.Adapter<MzBannerAdapter.MzViewHolder> {
 
-    private RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener;
+    private Context context;
+    private List<String> urlList;
+    private BannerLayout.OnBannerItemClickListener onBannerItemClickListener;
 
-    public MzBannerAdapter(Context context, List<String> urlList, RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener) {
-        super(context, urlList);
+    public MzBannerAdapter(Context context, List<String> urlList) {
+        this.context = context;
+        this.urlList = urlList;
+    }
+
+    public void setOnBannerItemClickListener(BannerLayout.OnBannerItemClickListener onBannerItemClickListener) {
         this.onBannerItemClickListener = onBannerItemClickListener;
     }
 
     @Override
-    protected MzBannerAdapter.MzViewHolder createCustomViewHolder(ViewGroup parent, int viewType) {
+    public MzBannerAdapter.MzViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new MzViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false));
     }
 
     @Override
-    public void bindCustomViewHolder(MzViewHolder holder, final int position) {
+    public void onBindViewHolder(MzBannerAdapter.MzViewHolder holder, final int position) {
         if (urlList == null || urlList.isEmpty())
             return;
-        String url = urlList.get(position % urlList.size());
+        final int P = position % urlList.size();
+        String url = urlList.get(P);
         ImageView img = (ImageView) holder.imageView;
         Glide.with(context).load(url).into(img);
         img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (onBannerItemClickListener != null) {
-                    onBannerItemClickListener.onItemClick(position % urlList.size());
+                    onBannerItemClickListener.onItemClick(P);
                 }
+
             }
         });
     }
+
+    @Override
+    public int getItemCount() {
+        return Integer.MAX_VALUE;
+    }
+
 
     class MzViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;

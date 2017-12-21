@@ -9,13 +9,12 @@ import android.graphics.drawable.LayerDrawable;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.ColorRes;
-import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -25,13 +24,14 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.renny.recyclerbanner.R;
+import com.renny.recyclerbanner.banner.adapter.MzBannerAdapter;
+import com.renny.recyclerbanner.banner.layoutmanager.BannerLayoutManager;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManager, A extends RecyclerView.Adapter> extends FrameLayout {
+public class BannerLayout extends FrameLayout {
 
-    protected int autoPlayDuration = 4000;//刷新间隔时间
+    protected int autoPlayDuration;//刷新间隔时间
 
     protected boolean showIndicator;//是否显示指示器
     protected RecyclerView indicatorContainer;
@@ -41,26 +41,25 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
     protected int indicatorMargin;//指示器间距
 
     protected RecyclerView mRecyclerView;
-    protected A adapter;
-    protected L mLayoutManager;
+
+    protected BannerLayoutManager mLayoutManager;
 
     protected int WHAT_AUTO_PLAY = 1000;
 
     protected boolean hasInit;
     protected int bannerSize = 1;
     protected int currentIndex;
-    protected boolean isPlaying;
+    protected boolean isPlaying = false;
 
-    protected boolean isAutoPlaying;
-    protected List<String> tempUrlList = new ArrayList<>();
+    protected boolean isAutoPlaying = true;
 
-
+    MzBannerAdapter mMzBannerAdapter;
     protected Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
-                mRecyclerView.smoothScrollToPosition(++currentIndex);
-                refreshIndicator();
+                ++currentIndex;
+                mRecyclerView.smoothScrollToPosition(currentIndex);
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
 
             }
@@ -68,15 +67,15 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         }
     });
 
-    public RecyclerViewBannerBase(Context context) {
+    public BannerLayout(Context context) {
         this(context, null);
     }
 
-    public RecyclerViewBannerBase(Context context, AttributeSet attrs) {
+    public BannerLayout(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public RecyclerViewBannerBase(Context context, AttributeSet attrs, int defStyleAttr) {
+    public BannerLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initView(context, attrs);
     }
@@ -123,35 +122,23 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         int o = a.getInt(R.styleable.RecyclerViewBannerBase_orientation, 0);
         int orientation = 0;
         if (o == 0) {
-            orientation = LinearLayoutManager.HORIZONTAL;
+            orientation = OrientationHelper.HORIZONTAL;
         } else if (o == 1) {
-            orientation = LinearLayoutManager.VERTICAL;
+            orientation = OrientationHelper.VERTICAL;
         }
         a.recycle();
         //recyclerView部分
         mRecyclerView = new RecyclerView(context);
-        new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
-        mLayoutManager = getLayoutManager(context, orientation);
-        mRecyclerView.setLayoutManager(mLayoutManager);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                onBannerScrolled(recyclerView, dx, dy);
-            }
-
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                onBannerScrollStateChanged(recyclerView, newState);
-
-            }
-        });
         LayoutParams vpLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mRecyclerView, vpLayoutParams);
+        mLayoutManager = new BannerLayoutManager(getContext(), orientation);
+        mRecyclerView.setLayoutManager(mLayoutManager);
+        new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
+
+
         //指示器部分
         indicatorContainer = new RecyclerView(context);
-
         LinearLayoutManager indicatorLayoutManager = new LinearLayoutManager(context, orientation, false);
         indicatorContainer.setLayoutManager(indicatorLayoutManager);
         indicatorAdapter = new IndicatorAdapter();
@@ -166,25 +153,28 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         }
     }
 
-    protected void onBannerScrolled(RecyclerView recyclerView, int dx, int dy) {
-
+    /**
+     * 设置是否禁止滚动播放
+     */
+    public void setAutoPlaying(boolean isAutoPlaying) {
+        this.isAutoPlaying = isAutoPlaying;
+        setPlaying(this.isAutoPlaying);
+    }
+    public boolean isPlaying() {
+        return isPlaying;
     }
 
-    protected void onBannerScrollStateChanged(RecyclerView recyclerView, int newState) {
-
+    public void setShowIndicator(boolean showIndicator) {
+        this.showIndicator = showIndicator;
+        indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
     }
-
-    protected abstract L getLayoutManager(Context context, int orientation);
-
-    protected abstract A getAdapter(Context context, List<String> list, OnBannerItemClickListener onBannerItemClickListener);
-
     /**
      * 设置轮播间隔时间
      *
-     * @param millisecond 时间毫秒
+     * @param autoPlayDuration 时间毫秒
      */
-    public void setIndicatorInterval(int millisecond) {
-        this.autoPlayDuration = millisecond;
+    public void setAutoPlayDuration(int autoPlayDuration) {
+        this.autoPlayDuration = autoPlayDuration;
     }
 
     /**
@@ -194,7 +184,7 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
      */
     protected synchronized void setPlaying(boolean playing) {
         if (isAutoPlaying && hasInit) {
-            if (!isPlaying && playing ) {
+            if (!isPlaying && playing) {
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
                 isPlaying = true;
             } else if (isPlaying && !playing) {
@@ -204,58 +194,41 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         }
     }
 
-    /**
-     * 设置是否禁止滚动播放
-     */
-    public void setAutoPlaying(boolean isAutoPlaying) {
-        this.isAutoPlaying = isAutoPlaying;
-        setPlaying(this.isAutoPlaying);
-    }
-
-    public boolean isPlaying() {
-        return isPlaying;
-    }
-
-    public void setShowIndicator(boolean showIndicator) {
-        this.showIndicator = showIndicator;
-        indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
+    public void setOnBannerItemClickListener(OnBannerItemClickListener onBannerItemClickListener) {
+        if (mMzBannerAdapter != null) {
+            mMzBannerAdapter.setOnBannerItemClickListener(onBannerItemClickListener);
+        }
     }
 
     /**
      * 设置轮播数据集
      */
-    public void initBannerImageView(@NonNull List<String> newList, OnBannerItemClickListener onBannerItemClickListener) {
-        //解决recyclerView嵌套问题
-        if (compareListDifferent(newList, tempUrlList)) {
-            hasInit = false;
-            setVisibility(VISIBLE);
-            setPlaying(false);
-            adapter = getAdapter(getContext(), newList, onBannerItemClickListener);
-            mRecyclerView.setAdapter(adapter);
-            tempUrlList = newList;
-            bannerSize = tempUrlList.size();
-            if (bannerSize > 1) {
-                indicatorContainer.setVisibility(VISIBLE);
-                currentIndex = bannerSize * 10000;
-                mRecyclerView.scrollToPosition(currentIndex);
-                indicatorAdapter.notifyDataSetChanged();
-                setPlaying(true);
-            } else {
-                indicatorContainer.setVisibility(GONE);
-                currentIndex = 0;
+    public void initBannerImageView(List<String> list) {
+        mMzBannerAdapter = new MzBannerAdapter(getContext(), list);
+        mRecyclerView.setAdapter(mMzBannerAdapter);
+        currentIndex = 10000;
+        mRecyclerView.scrollToPosition(currentIndex);
+        hasInit = true;
+        bannerSize = list.size();
+        setPlaying(true);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+
             }
-            hasInit = true;
-        }
-        if (!showIndicator) {
-            indicatorContainer.setVisibility(GONE);
-        }
-    }
 
-    /**
-     * 设置轮播数据集
-     */
-    public void initBannerImageView(@NonNull List<String> newList) {
-        initBannerImageView(newList, null);
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                int first = mLayoutManager.getCurrentPosition();
+                if (currentIndex != first) {
+                    currentIndex = first;
+                }
+
+            }
+        });
+
+
     }
 
     @Override
@@ -269,35 +242,7 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
                 setPlaying(true);
                 break;
         }
-        //解决recyclerView嵌套问题
-        try {
-            return super.dispatchTouchEvent(ev);
-        } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
-
-    //解决recyclerView嵌套问题
-    @Override
-    public boolean onTouchEvent(MotionEvent ev) {
-        try {
-            return super.onTouchEvent(ev);
-        } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        }
-        return false;
-    }
-
-    //解决recyclerView嵌套问题
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        try {
-            return super.onInterceptTouchEvent(ev);
-        } catch (IllegalArgumentException ex) {
-            ex.printStackTrace();
-        }
-        return false;
+        return super.dispatchTouchEvent(ev);
     }
 
     @Override
@@ -358,6 +303,17 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         }
     }
 
+    protected int dp2px(int dp) {
+        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
+                Resources.getSystem().getDisplayMetrics());
+    }
+
+    /**
+     * 获取颜色
+     */
+    protected int getColor(@ColorRes int color) {
+        return ContextCompat.getColor(getContext(), color);
+    }
 
     /**
      * 改变导航的指示点
@@ -373,31 +329,5 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
         void onItemClick(int position);
     }
 
-    protected int dp2px(int dp) {
-        return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
-                Resources.getSystem().getDisplayMetrics());
-    }
-
-    /**
-     * 获取颜色
-     */
-    protected int getColor(@ColorRes int color) {
-        return ContextCompat.getColor(getContext(), color);
-    }
-
-    protected boolean compareListDifferent(List<String> newTabList, List<String> oldTabList) {
-        if (oldTabList == null || oldTabList.isEmpty())
-            return true;
-        if (newTabList.size() != oldTabList.size())
-            return true;
-        for (int i = 0; i < newTabList.size(); i++) {
-            if (TextUtils.isEmpty(newTabList.get(i)))
-                return true;
-            if (!newTabList.get(i).equals(oldTabList.get(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
 
 }

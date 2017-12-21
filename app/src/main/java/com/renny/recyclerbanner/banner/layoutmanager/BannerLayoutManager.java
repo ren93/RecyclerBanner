@@ -7,6 +7,7 @@ import android.os.Parcelable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.LinearSmoothScroller;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
@@ -390,7 +391,7 @@ public class BannerLayoutManager extends LinearLayoutManager
         mDecoratedMeasurement = mOrientationHelper.getDecoratedMeasurement(scrap);
         mDecoratedMeasurementInOther = mOrientationHelper.getDecoratedMeasurementInOther(scrap);
         mSpaceMain = (mOrientationHelper.getTotalSpace() - mDecoratedMeasurement) / 2;
-        mSpaceInOther = (mOrientationHelper.getTotalSpaceInOther() - mDecoratedMeasurementInOther) / 2;
+        mSpaceInOther = (getTotalSpaceInOther() - mDecoratedMeasurementInOther) / 2;
         mInterval = setInterval();
         setUp();
         mLeftItems = (int) Math.abs(minRemoveOffset() / mInterval) + 1;
@@ -746,8 +747,6 @@ public class BannerLayoutManager extends LinearLayoutManager
     }
 
     /**
-     * used by {@link CenterScrollListener} to center the current view
-     *
      * @return the dy between center and current position
      */
     public int getOffsetToCenter() {
@@ -815,6 +814,16 @@ public class BannerLayoutManager extends LinearLayoutManager
      */
     public boolean getSmoothScrollbarEnabled() {
         return mSmoothScrollbarEnabled;
+    }
+
+    public int getTotalSpaceInOther() {
+        if (mOrientation == HORIZONTAL) {
+            return getHeight() - getPaddingTop()
+                    - getPaddingBottom();
+        } else {
+            return getWidth() - getPaddingLeft()
+                    - getPaddingRight();
+        }
     }
 
     private static class SavedState implements Parcelable {

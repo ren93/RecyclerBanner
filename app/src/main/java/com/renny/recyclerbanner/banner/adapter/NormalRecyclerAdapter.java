@@ -18,22 +18,25 @@ import java.util.List;
 /**
  * RecyclerView适配器
  */
-public class NormalRecyclerAdapter extends BaseBannerAdapter<NormalRecyclerAdapter.NormalHolder> {
+public class NormalRecyclerAdapter extends RecyclerView.Adapter<NormalRecyclerAdapter.NormalHolder> {
 
     private RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener;
+    private Context context;
+    private List<String> urlList;
 
     public NormalRecyclerAdapter(Context context, List<String> urlList, RecyclerViewBannerBase.OnBannerItemClickListener onBannerItemClickListener) {
-        super(context, urlList);
-        this.onBannerItemClickListener=onBannerItemClickListener;
+        this.context = context;
+        this.urlList = urlList;
+        this.onBannerItemClickListener = onBannerItemClickListener;
     }
 
     @Override
-    protected NormalRecyclerAdapter.NormalHolder createCustomViewHolder(ViewGroup parent, int viewType) {
+    public NormalRecyclerAdapter.NormalHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new NormalHolder(new ImageView(context));
     }
 
     @Override
-    public void bindCustomViewHolder(NormalHolder holder, final int position) {
+    public void onBindViewHolder(NormalHolder holder, final int position) {
         if (urlList == null || urlList.isEmpty())
             return;
         String url = urlList.get(position % urlList.size());
@@ -47,6 +50,11 @@ public class NormalRecyclerAdapter extends BaseBannerAdapter<NormalRecyclerAdapt
                 }
             }
         });
+    }
+
+    @Override
+    public int getItemCount() {
+        return Integer.MAX_VALUE;
     }
 
     class NormalHolder extends RecyclerView.ViewHolder {
