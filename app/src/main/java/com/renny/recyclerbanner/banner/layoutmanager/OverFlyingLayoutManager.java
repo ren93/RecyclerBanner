@@ -2,6 +2,7 @@ package com.renny.recyclerbanner.banner.layoutmanager;
 
 import android.content.Context;
 import android.graphics.PointF;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.view.ViewCompat;
@@ -20,9 +21,12 @@ import static android.support.v7.widget.RecyclerView.NO_POSITION;
  */
 
 @SuppressWarnings({"WeakerAccess", "unused", "SameParameterValue"})
-public class BannerLayoutManager extends RecyclerView.LayoutManager
+public class OverFlyingLayoutManager extends RecyclerView.LayoutManager
         implements RecyclerView.SmoothScroller.ScrollVectorProvider {
-
+    private float minScale = 0.75f;//两侧图片缩放比
+    private float angle = 8f;//翻转角度
+    private int itemSpace = 385;
+    private boolean mInfinite = true;
     public static final int DETERMINE_BY_MAX_AND_MIN = -1;
 
     public static final int HORIZONTAL = OrientationHelper.HORIZONTAL;
@@ -33,9 +37,30 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
 
     protected int mDecoratedMeasurementInOther;
 
-    private int itemSpace = 20;
+    public float getMinScale() {
+        return minScale;
+    }
 
-    private float centerScale = 1.2f;
+    public void setMinScale(float minScale) {
+        this.minScale = minScale;
+    }
+
+    public float getAngle() {
+        return angle;
+    }
+
+    public void setAngle(float angle) {
+        this.angle = angle;
+    }
+
+    public int getItemSpace() {
+        return itemSpace;
+    }
+
+    public void setItemSpace(int itemSpace) {
+        this.itemSpace = itemSpace;
+    }
+
     /**
      * Current orientation. Either {@link #HORIZONTAL} or {@link #VERTICAL}
      */
@@ -83,14 +108,13 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
 
     private boolean mRecycleChildrenOnDetach;
 
-    private boolean mInfinite = false;
 
     private boolean mEnableBringCenterToFront;
 
     /**
      * ugly code for fix bug caused by float
      */
-    private boolean mIntegerDy = true;
+    private boolean mIntegerDy = false;
 
     private int mLeftItems;
 
@@ -105,28 +129,31 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
      * @return the mInterval of each item's mOffset
      */
     protected float setInterval() {
-        return mDecoratedMeasurement * ((centerScale - 1) / 2 + 1) + itemSpace;
-    }
-
-    public void setCenterScale(float centerScale) {
-        this.centerScale = centerScale;
+        return mDecoratedMeasurement - itemSpace;
     }
 
     protected void setItemViewProperty(View itemView, float targetOffset) {
         float scale = calculateScale(targetOffset + mSpaceMain);
         itemView.setScaleX(scale);
         itemView.setScaleY(scale);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            itemView.setElevation(0);
+        }
+        final float rotation = calRotation(targetOffset);
+        if (getOrientation() == HORIZONTAL) {
+            itemView.setRotationY(rotation);
+        } else {
+            itemView.setRotationX(-rotation);
+        }
     }
 
-    /**
-     * @param x start positon of the view you want scale
-     * @return the scale rate of current scroll mOffset
-     */
+    private float calRotation(float targetOffset) {
+        return -angle / mInterval * targetOffset;
+    }
+
     private float calculateScale(float x) {
         float deltaX = Math.abs(x - (mOrientationHelper.getTotalSpace() - mDecoratedMeasurement) / 2f);
-        float diff = 0f;
-        if ((mDecoratedMeasurement - deltaX) > 0) diff = mDecoratedMeasurement - deltaX;
-        return (centerScale - 1f) / mDecoratedMeasurement * diff + 1;
+        return (minScale - 1) * deltaX / (mOrientationHelper.getTotalSpace() / 2f) + 1f;
     }
 
     /**
@@ -135,36 +162,33 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
      * or you can just setElevation in {@link #setItemViewProperty(View, float)}
      */
     protected float setViewElevation(View itemView, float targetOffset) {
-        return 0;
+        return itemView.getScaleX() * 5;
     }
 
     /**
      * Creates a horizontal ViewPagerLayoutManager
      */
-    public BannerLayoutManager(Context context) {
-        this(context, HORIZONTAL, false);
-    }
-
-    /**
-     * Creates a horizontal ViewPagerLayoutManager
-     */
-    public BannerLayoutManager(Context context, int orientation) {
-        this(context, orientation, false);
+    public OverFlyingLayoutManager(Context context) {
+        this(HORIZONTAL, false);
     }
 
     /**
      * @param orientation   Layout orientation. Should be {@link #HORIZONTAL} or {@link #VERTICAL}
      * @param reverseLayout When set to true, layouts from end to start
      */
-    public BannerLayoutManager(Context context, int orientation, boolean reverseLayout) {
+    public OverFlyingLayoutManager(int orientation, boolean reverseLayout) {
         setOrientation(orientation);
         setReverseLayout(reverseLayout);
         setAutoMeasureEnabled(true);
+        setEnableBringCenterToFront(true);
+        setIntegerDy(true);
     }
 
-    public void setItemSpace(int itemSpace) {
+    public OverFlyingLayoutManager(float minScale, int itemSpace, int orientation) {
+        this(orientation, false);
+        this.minScale = minScale;
         this.itemSpace = itemSpace;
-        requestLayout();
+        mOrientation = orientation;
     }
 
     @Override
@@ -257,7 +281,6 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
     }
 
     /**
-     * Sets the orientation of the layout. {@link BannerLayoutManager}
      * will do its best to keep scroll position.
      *
      * @param orientation {@link #HORIZONTAL} or {@link #VERTICAL}
@@ -409,6 +432,16 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
 
         detachAndScrapAttachedViews(recycler);
         layoutItems(recycler);
+    }
+
+    public int getTotalSpaceInOther() {
+        if (mOrientation == HORIZONTAL) {
+            return getHeight() - getPaddingTop()
+                    - getPaddingBottom();
+        } else {
+            return getWidth() - getPaddingLeft()
+                    - getPaddingRight();
+        }
     }
 
     @Override
@@ -705,7 +738,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
     }
 
     protected float getDistanceRatio() {
-        return 1f;
+        return 1;
     }
 
     public int getCurrentPosition() {
@@ -813,16 +846,6 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
      */
     public boolean getSmoothScrollbarEnabled() {
         return mSmoothScrollbarEnabled;
-    }
-
-    public int getTotalSpaceInOther() {
-        if (mOrientation == HORIZONTAL) {
-            return getHeight() - getPaddingTop()
-                    - getPaddingBottom();
-        } else {
-            return getWidth() - getPaddingLeft()
-                    - getPaddingRight();
-        }
     }
 
     private static class SavedState implements Parcelable {

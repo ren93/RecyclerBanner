@@ -24,6 +24,8 @@
             android:name=".NormalActivity"
             android:screenOrientation="portrait">
         </activity>
+        <activity android:name=".OverFlyingActivity">
+        </activity>
     </application>
 
 </manifest>

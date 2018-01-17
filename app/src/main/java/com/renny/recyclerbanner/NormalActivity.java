@@ -18,8 +18,8 @@ public class NormalActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main2);
-        banner = findViewById(R.id.banner);
-        banner2 = findViewById(R.id.banner2);
+        banner = (RecyclerViewBannerNormal) findViewById(R.id.banner);
+        banner2 = (RecyclerViewBannerNormal) findViewById(R.id.banner2);
         List<String> list = new ArrayList<>();
         list.add("http://oo6pz0u05.bkt.clouddn.com/17-12-13/69427561.jpg");
         list.add("http://oo6pz0u05.bkt.clouddn.com/17-12-13/23738150.jpg");

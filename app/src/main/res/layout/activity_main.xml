@@ -28,6 +28,12 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="20dp"
         android:onClick="jump"
-        android:text="查看基础版"
-        />
+        android:text="查看基础版"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="20dp"
+        android:onClick="jumpOverFlying"
+        android:text="查看层叠版"/>
 </LinearLayout>

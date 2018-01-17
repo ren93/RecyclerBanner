@@ -20,8 +20,8 @@ public class MainActivity extends AppCompatActivity implements BannerLayout.OnBa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        banner = findViewById(R.id.recycler);
-        bannerVertical = findViewById(R.id.recycler_ver);
+        banner = (BannerLayout) findViewById(R.id.recycler);
+        bannerVertical = (BannerLayout) findViewById(R.id.recycler_ver);
         //解决recyclerView嵌套问题
         List<String> list = new ArrayList<>();
         list.add("http://oo6pz0u05.bkt.clouddn.com/17-12-13/69427561.jpg");
@@ -38,6 +38,9 @@ public class MainActivity extends AppCompatActivity implements BannerLayout.OnBa
 
     public void jump(View view) {
         startActivity(new Intent(MainActivity.this, NormalActivity.class));
+    }
+    public void jumpOverFlying(View view) {
+        startActivity(new Intent(MainActivity.this, OverFlyingActivity.class));
     }
 
     @Override
