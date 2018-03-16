@@ -15,6 +15,7 @@ RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。
 | app:orientation | 轮播图方向 | enum | horizontal |
 | app:itemSpace | 图片间距 | int | 20 |
 | app:centerScale | 当前图片缩放比列 | float | 1.2 |
+| app:moveSpeed | 滚动速度，越大越快 | float | 1.0 |
 
 效果如下图：
 

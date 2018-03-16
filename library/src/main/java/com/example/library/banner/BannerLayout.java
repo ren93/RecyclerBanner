@@ -12,7 +12,6 @@ import android.os.Message;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
-import android.support.v7.widget.PagerSnapHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.TypedValue;
@@ -23,31 +22,32 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import com.example.library.R;
+import com.example.library.banner.layoutmanager.CenterSnapHelper;
 import com.example.library.banner.layoutmanager.BannerLayoutManager;
 
 public class BannerLayout extends FrameLayout {
 
-    protected int autoPlayDuration;//刷新间隔时间
+    private int autoPlayDuration;//刷新间隔时间
 
-    protected boolean showIndicator;//是否显示指示器
-    protected RecyclerView indicatorContainer;
-    protected Drawable mSelectedDrawable;
-    protected Drawable mUnselectedDrawable;
-    protected IndicatorAdapter indicatorAdapter;
-    protected int indicatorMargin;//指示器间距
+    private boolean showIndicator;//是否显示指示器
+    private RecyclerView indicatorContainer;
+    private Drawable mSelectedDrawable;
+    private Drawable mUnselectedDrawable;
+    private IndicatorAdapter indicatorAdapter;
+    private int indicatorMargin;//指示器间距
+    private int orientation;
+    private RecyclerView mRecyclerView;
 
-    protected RecyclerView mRecyclerView;
+    private BannerLayoutManager mLayoutManager;
 
-    protected BannerLayoutManager mLayoutManager;
+    private int WHAT_AUTO_PLAY = 1000;
 
-    protected int WHAT_AUTO_PLAY = 1000;
+    private boolean hasInit;
+    private int bannerSize = 1;
+    private int currentIndex;
+    private boolean isPlaying = false;
 
-    protected boolean hasInit;
-    protected int bannerSize = 1;
-    protected int currentIndex;
-    protected boolean isPlaying = false;
-
-    protected boolean isAutoPlaying = true;
+    private boolean isAutoPlaying = true;
 
 
     protected Handler mHandler = new Handler(new Handler.Callback() {
@@ -55,7 +55,10 @@ public class BannerLayout extends FrameLayout {
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
                 ++currentIndex;
-                mRecyclerView.smoothScrollToPosition(currentIndex%bannerSize);
+
+                    mRecyclerView.smoothScrollToPosition(currentIndex);
+
+
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
                 refreshIndicator();
             }
@@ -84,6 +87,7 @@ public class BannerLayout extends FrameLayout {
         isAutoPlaying = a.getBoolean(R.styleable.BannerLayout_autoPlaying, true);
         int itemSpace=a.getInt(R.styleable.BannerLayout_itemSpace, 20);
         float centerScale=a.getFloat(R.styleable.BannerLayout_centerScale, 1.2f);
+        float moveSpeed=a.getFloat(R.styleable.BannerLayout_moveSpeed, 1.0f);
         if (mSelectedDrawable == null) {
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
@@ -109,7 +113,7 @@ public class BannerLayout extends FrameLayout {
         int marginBottom =  dp2px(11);
         int gravity = GravityCompat.START;
         int o = a.getInt(R.styleable.BannerLayout_orientation, 0);
-        int orientation = 0;
+         orientation = 0;
         if (o == 0) {
             orientation = OrientationHelper.HORIZONTAL;
         } else if (o == 1) {
@@ -125,8 +129,9 @@ public class BannerLayout extends FrameLayout {
         mLayoutManager.setInfinite(true);
         mLayoutManager.setItemSpace(itemSpace);
         mLayoutManager.setCenterScale(centerScale);
+        mLayoutManager.setMoveSpeed(moveSpeed);
         mRecyclerView.setLayoutManager(mLayoutManager);
-        new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
+        new CenterSnapHelper().attachToRecyclerView(mRecyclerView);
 
 
         //指示器部分
