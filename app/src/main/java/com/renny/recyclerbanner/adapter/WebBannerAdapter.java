@@ -18,13 +18,13 @@ import java.util.List;
  */
 
 
-public class MzBannerAdapter extends RecyclerView.Adapter<MzBannerAdapter.MzViewHolder> {
+public class WebBannerAdapter extends RecyclerView.Adapter<WebBannerAdapter.MzViewHolder> {
 
     private Context context;
     private List<String> urlList;
     private BannerLayout.OnBannerItemClickListener onBannerItemClickListener;
 
-    public MzBannerAdapter(Context context, List<String> urlList) {
+    public WebBannerAdapter(Context context, List<String> urlList) {
         this.context = context;
         this.urlList = urlList;
     }
@@ -34,12 +34,12 @@ public class MzBannerAdapter extends RecyclerView.Adapter<MzBannerAdapter.MzView
     }
 
     @Override
-    public MzBannerAdapter.MzViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public WebBannerAdapter.MzViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         return new MzViewHolder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image, parent, false));
     }
 
     @Override
-    public void onBindViewHolder(MzBannerAdapter.MzViewHolder holder, final int position) {
+    public void onBindViewHolder(WebBannerAdapter.MzViewHolder holder, final int position) {
         if (urlList == null || urlList.isEmpty())
             return;
         final int P = position % urlList.size();
@@ -59,7 +59,10 @@ public class MzBannerAdapter extends RecyclerView.Adapter<MzBannerAdapter.MzView
 
     @Override
     public int getItemCount() {
-        return Integer.MAX_VALUE;
+        if (urlList != null) {
+           return urlList.size();
+        }
+       return 0;
     }
 
 

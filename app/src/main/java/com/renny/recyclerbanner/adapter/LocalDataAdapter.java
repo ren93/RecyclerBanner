@@ -10,7 +10,7 @@ import android.widget.Toast;
 import com.renny.recyclerbanner.R;
 
 
-public class DataAdapter extends RecyclerView.Adapter<DataAdapter.ViewHolder> {
+public class LocalDataAdapter extends RecyclerView.Adapter<LocalDataAdapter.ViewHolder> {
     private int[] images = {R.drawable.item1, R.drawable.item2, R.drawable.item3,
             R.drawable.item4, R.drawable.item5, R.drawable.item6, R.drawable.item7,
             R.drawable.item8, R.drawable.item9, R.drawable.item10};

@@ -9,8 +9,6 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.ColorRes;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
@@ -57,7 +55,7 @@ public class BannerLayout extends FrameLayout {
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
                 ++currentIndex;
-                mRecyclerView.smoothScrollToPosition(currentIndex);
+                mRecyclerView.smoothScrollToPosition(currentIndex%bannerSize);
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
                 refreshIndicator();
             }
@@ -124,6 +122,7 @@ public class BannerLayout extends FrameLayout {
                 ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mRecyclerView, vpLayoutParams);
         mLayoutManager = new BannerLayoutManager(getContext(), orientation);
+        mLayoutManager.setInfinite(true);
         mLayoutManager.setItemSpace(itemSpace);
         mLayoutManager.setCenterScale(centerScale);
         mRecyclerView.setLayoutManager(mLayoutManager);
@@ -192,12 +191,12 @@ public class BannerLayout extends FrameLayout {
     /**
      * 设置轮播数据集
      */
-    public void setAdapter(int itemCount,RecyclerView.Adapter adapter) {
+    public void setAdapter(RecyclerView.Adapter adapter) {
+        hasInit = false;
         mRecyclerView.setAdapter(adapter);
-        currentIndex = 10000;
-        mRecyclerView.scrollToPosition(currentIndex);
-        hasInit = true;
-        bannerSize = itemCount;
+
+        bannerSize = adapter.getItemCount();
+        mLayoutManager.setInfinite(bannerSize>=3);
         setPlaying(true);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -215,6 +214,7 @@ public class BannerLayout extends FrameLayout {
                 refreshIndicator();
             }
         });
+        hasInit = true;
     }
 
     @Override
@@ -292,13 +292,6 @@ public class BannerLayout extends FrameLayout {
     protected int dp2px(int dp) {
         return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp,
                 Resources.getSystem().getDisplayMetrics());
-    }
-
-    /**
-     * 获取颜色
-     */
-    protected int getColor(@ColorRes int color) {
-        return ContextCompat.getColor(getContext(), color);
     }
 
     /**

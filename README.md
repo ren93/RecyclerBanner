@@ -1,8 +1,8 @@
 # RecyclerBanner
 ## 介绍
-RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。效果如下图。
+RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。
 
-这里有[相关博客介绍！](https://juejin.im/post/5a13a28c51882512a860ee6a)
+这里有[相关博客介绍！](https://juejin.im/post/5a13a28c51882512a860ee6a)。
 
 ### 属性
 
@@ -16,7 +16,7 @@ RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。效�
 | app:itemSpace | 图片间距 | int | 20 |
 | app:centerScale | 当前图片缩放比列 | float | 1.2 |
 
-
+效果如下图：
 
 ![](./pictures/banner.gif)
 

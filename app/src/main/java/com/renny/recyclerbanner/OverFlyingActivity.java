@@ -7,7 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.SeekBar;
 
-import com.renny.recyclerbanner.adapter.DataAdapter;
+import com.renny.recyclerbanner.adapter.LocalDataAdapter;
 import com.example.library.banner.layoutmanager.CenterScrollListener;
 import com.example.library.banner.layoutmanager.OverFlyingLayoutManager;
 
@@ -26,7 +26,7 @@ public class OverFlyingActivity extends AppCompatActivity {
         recyclerView = (RecyclerView) findViewById(R.id.recycler_banner);
         mOverFlyingLayoutManager = new OverFlyingLayoutManager(0.75f, 385, OverFlyingLayoutManager.HORIZONTAL);
 
-        recyclerView.setAdapter(new DataAdapter());
+        recyclerView.setAdapter(new LocalDataAdapter());
         recyclerView.setLayoutManager(mOverFlyingLayoutManager);
 
         recyclerView.addOnScrollListener(new CenterScrollListener());
