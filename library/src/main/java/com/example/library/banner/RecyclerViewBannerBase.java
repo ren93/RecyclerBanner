@@ -1,8 +1,9 @@
-package com.renny.recyclerbanner.banner;
+package com.example.library.banner;
 
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -23,8 +24,7 @@ import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-
-import com.renny.recyclerbanner.R;
+import com.example.library.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +92,7 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
             selectedGradientDrawable.setShape(GradientDrawable.OVAL);
-            selectedGradientDrawable.setColor(getColor(R.color.colorAccent));
+            selectedGradientDrawable.setColor(Color.RED);
             selectedGradientDrawable.setSize(dp2px(5), dp2px(5));
             selectedGradientDrawable.setCornerRadius(dp2px(5) / 2);
             mSelectedDrawable = new LayerDrawable(new Drawable[]{selectedGradientDrawable});
@@ -101,7 +101,7 @@ public abstract class RecyclerViewBannerBase<L extends RecyclerView.LayoutManage
             //绘制默认未选中状态图形
             GradientDrawable unSelectedGradientDrawable = new GradientDrawable();
             unSelectedGradientDrawable.setShape(GradientDrawable.OVAL);
-            unSelectedGradientDrawable.setColor(getColor(R.color.colorPrimaryDark));
+            unSelectedGradientDrawable.setColor(Color.GRAY);
             unSelectedGradientDrawable.setSize(dp2px(5), dp2px(5));
             unSelectedGradientDrawable.setCornerRadius(dp2px(5) / 2);
             mUnselectedDrawable = new LayerDrawable(new Drawable[]{unSelectedGradientDrawable});

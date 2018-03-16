@@ -1,8 +1,9 @@
-package com.renny.recyclerbanner.banner;
+package com.example.library.banner;
 
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -23,11 +24,8 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 
-import com.renny.recyclerbanner.R;
-import com.renny.recyclerbanner.banner.adapter.MzBannerAdapter;
-import com.renny.recyclerbanner.banner.layoutmanager.BannerLayoutManager;
-
-import java.util.List;
+import com.example.library.R;
+import com.example.library.banner.layoutmanager.BannerLayoutManager;
 
 public class BannerLayout extends FrameLayout {
 
@@ -53,7 +51,7 @@ public class BannerLayout extends FrameLayout {
 
     protected boolean isAutoPlaying = true;
 
-    MzBannerAdapter mMzBannerAdapter;
+
     protected Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -61,7 +59,7 @@ public class BannerLayout extends FrameLayout {
                 ++currentIndex;
                 mRecyclerView.smoothScrollToPosition(currentIndex);
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
-
+                refreshIndicator();
             }
             return false;
         }
@@ -92,7 +90,7 @@ public class BannerLayout extends FrameLayout {
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
             selectedGradientDrawable.setShape(GradientDrawable.OVAL);
-            selectedGradientDrawable.setColor(getColor(R.color.colorAccent));
+            selectedGradientDrawable.setColor(Color.RED);
             selectedGradientDrawable.setSize(dp2px(5), dp2px(5));
             selectedGradientDrawable.setCornerRadius(dp2px(5) / 2);
             mSelectedDrawable = new LayerDrawable(new Drawable[]{selectedGradientDrawable});
@@ -101,7 +99,7 @@ public class BannerLayout extends FrameLayout {
             //绘制默认未选中状态图形
             GradientDrawable unSelectedGradientDrawable = new GradientDrawable();
             unSelectedGradientDrawable.setShape(GradientDrawable.OVAL);
-            unSelectedGradientDrawable.setColor(getColor(R.color.colorPrimaryDark));
+            unSelectedGradientDrawable.setColor(Color.GRAY);
             unSelectedGradientDrawable.setSize(dp2px(5), dp2px(5));
             unSelectedGradientDrawable.setCornerRadius(dp2px(5) / 2);
             mUnselectedDrawable = new LayerDrawable(new Drawable[]{unSelectedGradientDrawable});
@@ -189,22 +187,17 @@ public class BannerLayout extends FrameLayout {
         }
     }
 
-    public void setOnBannerItemClickListener(OnBannerItemClickListener onBannerItemClickListener) {
-        if (mMzBannerAdapter != null) {
-            mMzBannerAdapter.setOnBannerItemClickListener(onBannerItemClickListener);
-        }
-    }
+
 
     /**
      * 设置轮播数据集
      */
-    public void initBannerImageView(List<String> list) {
-        mMzBannerAdapter = new MzBannerAdapter(getContext(), list);
-        mRecyclerView.setAdapter(mMzBannerAdapter);
+    public void setAdapter(int itemCount,RecyclerView.Adapter adapter) {
+        mRecyclerView.setAdapter(adapter);
         currentIndex = 10000;
         mRecyclerView.scrollToPosition(currentIndex);
         hasInit = true;
-        bannerSize = list.size();
+        bannerSize = itemCount;
         setPlaying(true);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
@@ -219,11 +212,9 @@ public class BannerLayout extends FrameLayout {
                 if (currentIndex != first) {
                     currentIndex = first;
                 }
-
+                refreshIndicator();
             }
         });
-
-
     }
 
     @Override

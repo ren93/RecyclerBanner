@@ -4,8 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.renny.recyclerbanner.banner.RecyclerViewBannerNormal;
-import com.renny.recyclerbanner.banner.RecyclerViewBannerBase;
+import com.example.library.banner.RecyclerViewBannerBase;
 
 import java.util.ArrayList;
 import java.util.List;

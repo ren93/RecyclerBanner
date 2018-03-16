@@ -18,8 +18,8 @@ RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。效�
 
 
 
-![](./pictures/3d.gif)
-![](./pictures/normal.gif)
+![](./pictures/banner.gif)
+
 ## License
 
 

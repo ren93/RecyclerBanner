@@ -1,4 +1,4 @@
-package com.renny.recyclerbanner.banner.layoutmanager;
+package com.example.library.banner.layoutmanager;
 
 import android.content.Context;
 import android.graphics.PointF;
@@ -73,7 +73,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
      * When LayoutManager needs to scroll to a position, it sets this variable and requests a
      * layout which will check this variable and re-layout accordingly.
      */
-    private int mPendingScrollPosition = NO_POSITION;
+    private int mPendingScrollPosition = RecyclerView.NO_POSITION;
 
     private SavedState mPendingSavedState = null;
 
@@ -402,7 +402,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
             mOffset = mPendingSavedState.offset;
         }
 
-        if (mPendingScrollPosition != NO_POSITION) {
+        if (mPendingScrollPosition != RecyclerView.NO_POSITION) {
             mOffset = mReverseLayout ?
                     mPendingScrollPosition * -mInterval : mPendingScrollPosition * mInterval;
         }
@@ -415,7 +415,7 @@ public class BannerLayoutManager extends RecyclerView.LayoutManager
     public void onLayoutCompleted(RecyclerView.State state) {
         super.onLayoutCompleted(state);
         mPendingSavedState = null;
-        mPendingScrollPosition = NO_POSITION;
+        mPendingScrollPosition = RecyclerView.NO_POSITION;
     }
 
     void ensureLayoutState() {

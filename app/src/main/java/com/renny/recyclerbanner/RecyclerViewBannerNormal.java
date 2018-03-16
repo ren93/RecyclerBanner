@@ -1,12 +1,12 @@
-package com.renny.recyclerbanner.banner;
+package com.renny.recyclerbanner;
 
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.View;
-
-import com.renny.recyclerbanner.banner.adapter.NormalRecyclerAdapter;
+import com.example.library.banner.RecyclerViewBannerBase;
+import com.renny.recyclerbanner.adapter.NormalRecyclerAdapter;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.renny.recyclerbanner.banner.adapter;
+package com.renny.recyclerbanner.adapter;
 
 /**
  * Created by test on 2017/11/23.
@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
-import com.renny.recyclerbanner.banner.RecyclerViewBannerBase;
+import com.example.library.banner.RecyclerViewBannerBase;
 
 import java.util.List;
 

@@ -6,7 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Toast;
 
-import com.renny.recyclerbanner.banner.BannerLayout;
+import com.example.library.banner.BannerLayout;
+import com.renny.recyclerbanner.adapter.MzBannerAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,11 +33,23 @@ public class MainActivity extends AppCompatActivity implements BannerLayout.OnBa
         list.add("http://img0.imgtn.bdimg.com/it/u=3184221534,2238244948&fm=27&gp=0.jpg");
         list.add("http://img4.imgtn.bdimg.com/it/u=1794621527,1964098559&fm=27&gp=0.jpg");
         list.add("http://img4.imgtn.bdimg.com/it/u=1243617734,335916716&fm=27&gp=0.jpg");
+        MzBannerAdapter mzBannerAdapter=new MzBannerAdapter(this,list);
+        mzBannerAdapter.setOnBannerItemClickListener(new BannerLayout.OnBannerItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                Toast.makeText(MainActivity.this, "点击了第  " + position+"  项", Toast.LENGTH_SHORT).show();
+            }
+        });
 
-        recyclerBanner.initBannerImageView(list);
-        bannerVertical.initBannerImageView(list);
-        recyclerBanner.setOnBannerItemClickListener(this);
-        bannerVertical.setOnBannerItemClickListener(this);
+        MzBannerAdapter mzBannerAdapter2=new MzBannerAdapter(this,list);
+        mzBannerAdapter2.setOnBannerItemClickListener(new BannerLayout.OnBannerItemClickListener() {
+            @Override
+            public void onItemClick(int position) {
+                Toast.makeText(MainActivity.this, "点击了第  " + position+"  项", Toast.LENGTH_SHORT).show();
+            }
+        });
+        recyclerBanner.setAdapter(list.size(),mzBannerAdapter);
+        bannerVertical.setAdapter(list.size(),mzBannerAdapter2);
     }
 
 
@@ -49,6 +62,6 @@ public class MainActivity extends AppCompatActivity implements BannerLayout.OnBa
 
     @Override
     public void onItemClick(int position) {
-        Toast.makeText(this, "点击了第  " + position+"  项", Toast.LENGTH_SHORT).show();
+
     }
 }

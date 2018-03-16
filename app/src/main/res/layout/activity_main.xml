@@ -8,7 +8,7 @@
     android:orientation="vertical"
     tools:context="com.renny.recyclerbanner.MainActivity">
 
-    <com.renny.recyclerbanner.banner.BannerLayout
+    <com.example.library.banner.BannerLayout
         android:id="@+id/recycler"
         android:layout_width="match_parent"
         app:autoPlaying="true"
@@ -16,7 +16,7 @@
         app:centerScale="1.3"
         android:layout_height="200dp"/>
 
-    <com.renny.recyclerbanner.banner.BannerLayout
+    <com.example.library.banner.BannerLayout
         android:id="@+id/recycler_ver"
         android:layout_width="match_parent"
         android:layout_height="200dp"

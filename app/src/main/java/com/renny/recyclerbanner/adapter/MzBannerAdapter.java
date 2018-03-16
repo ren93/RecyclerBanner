@@ -1,4 +1,4 @@
-package com.renny.recyclerbanner.banner.adapter;
+package com.renny.recyclerbanner.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,8 +8,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.example.library.banner.BannerLayout;
 import com.renny.recyclerbanner.R;
-import com.renny.recyclerbanner.banner.BannerLayout;
 
 import java.util.List;
 
