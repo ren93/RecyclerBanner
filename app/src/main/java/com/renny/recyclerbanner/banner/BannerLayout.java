@@ -81,12 +81,13 @@ public class BannerLayout extends FrameLayout {
     }
 
     protected void initView(Context context, AttributeSet attrs) {
-        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.RecyclerViewBannerBase);
-        showIndicator = a.getBoolean(R.styleable.RecyclerViewBannerBase_showIndicator, true);
-        autoPlayDuration = a.getInt(R.styleable.RecyclerViewBannerBase_interval, 4000);
-        isAutoPlaying = a.getBoolean(R.styleable.RecyclerViewBannerBase_autoPlaying, true);
-        mSelectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerBase_indicatorSelectedSrc);
-        mUnselectedDrawable = a.getDrawable(R.styleable.RecyclerViewBannerBase_indicatorUnselectedSrc);
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.BannerLayout);
+        showIndicator = a.getBoolean(R.styleable.BannerLayout_showIndicator, true);
+        autoPlayDuration = a.getInt(R.styleable.BannerLayout_interval, 4000);
+        isAutoPlaying = a.getBoolean(R.styleable.BannerLayout_autoPlaying, true);
+        int itemSpace=a.getInt(R.styleable.BannerLayout_itemSpace, 20);
+        float centerScale=a.getFloat(R.styleable.BannerLayout_centerScale, 1.2f);
         if (mSelectedDrawable == null) {
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
@@ -106,20 +107,12 @@ public class BannerLayout extends FrameLayout {
             mUnselectedDrawable = new LayerDrawable(new Drawable[]{unSelectedGradientDrawable});
         }
 
-        indicatorMargin = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorSpace, dp2px(4));
-        int marginLeft = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorMarginLeft, dp2px(16));
-        int marginRight = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorMarginRight, dp2px(0));
-        int marginBottom = a.getDimensionPixelSize(R.styleable.RecyclerViewBannerBase_indicatorMarginBottom, dp2px(11));
-        int g = a.getInt(R.styleable.RecyclerViewBannerBase_indicatorGravity, 0);
-        int gravity;
-        if (g == 0) {
-            gravity = GravityCompat.START;
-        } else if (g == 2) {
-            gravity = GravityCompat.END;
-        } else {
-            gravity = Gravity.CENTER;
-        }
-        int o = a.getInt(R.styleable.RecyclerViewBannerBase_orientation, 0);
+        indicatorMargin = dp2px(4);
+        int marginLeft =  dp2px(16);
+        int marginRight =  dp2px(0);
+        int marginBottom =  dp2px(11);
+        int gravity = GravityCompat.START;
+        int o = a.getInt(R.styleable.BannerLayout_orientation, 0);
         int orientation = 0;
         if (o == 0) {
             orientation = OrientationHelper.HORIZONTAL;
@@ -127,12 +120,14 @@ public class BannerLayout extends FrameLayout {
             orientation = OrientationHelper.VERTICAL;
         }
         a.recycle();
-        //recyclerView部分
+        //轮播图部分
         mRecyclerView = new RecyclerView(context);
         LayoutParams vpLayoutParams = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mRecyclerView, vpLayoutParams);
         mLayoutManager = new BannerLayoutManager(getContext(), orientation);
+        mLayoutManager.setItemSpace(itemSpace);
+        mLayoutManager.setCenterScale(centerScale);
         mRecyclerView.setLayoutManager(mLayoutManager);
         new PagerSnapHelper().attachToRecyclerView(mRecyclerView);
 

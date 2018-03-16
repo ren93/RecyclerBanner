@@ -11,6 +11,9 @@
     <com.renny.recyclerbanner.banner.BannerLayout
         android:id="@+id/recycler"
         android:layout_width="match_parent"
+        app:autoPlaying="true"
+        app:itemSpace="20"
+        app:centerScale="1.3"
         android:layout_height="200dp"/>
 
     <com.renny.recyclerbanner.banner.BannerLayout
