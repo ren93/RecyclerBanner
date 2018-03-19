@@ -14,14 +14,13 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements BannerLayout.OnBannerItemClickListener {
 
-    BannerLayout recyclerBanner, bannerVertical;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        recyclerBanner =  findViewById(R.id.recycler);
-        bannerVertical =  findViewById(R.id.recycler_ver);
+        BannerLayout  recyclerBanner =  findViewById(R.id.recycler);
+        BannerLayout bannerVertical =  findViewById(R.id.recycler_ver);
 
         List<String> list = new ArrayList<>();
         list.add("http://img0.imgtn.bdimg.com/it/u=1352823040,1166166164&fm=27&gp=0.jpg");
@@ -30,23 +29,23 @@ public class MainActivity extends AppCompatActivity implements BannerLayout.OnBa
         list.add("http://img0.imgtn.bdimg.com/it/u=3184221534,2238244948&fm=27&gp=0.jpg");
         list.add("http://img4.imgtn.bdimg.com/it/u=1794621527,1964098559&fm=27&gp=0.jpg");
         list.add("http://img4.imgtn.bdimg.com/it/u=1243617734,335916716&fm=27&gp=0.jpg");
-        WebBannerAdapter mzBannerAdapter=new WebBannerAdapter(this,list);
-        mzBannerAdapter.setOnBannerItemClickListener(new BannerLayout.OnBannerItemClickListener() {
+        WebBannerAdapter webBannerAdapter=new WebBannerAdapter(this,list);
+        webBannerAdapter.setOnBannerItemClickListener(new BannerLayout.OnBannerItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 Toast.makeText(MainActivity.this, "点击了第  " + position+"  项", Toast.LENGTH_SHORT).show();
             }
         });
 
-        WebBannerAdapter mzBannerAdapter2=new WebBannerAdapter(this,list);
-        mzBannerAdapter2.setOnBannerItemClickListener(new BannerLayout.OnBannerItemClickListener() {
+        WebBannerAdapter WebBannerAdapter2 =new WebBannerAdapter(this,list);
+        WebBannerAdapter2.setOnBannerItemClickListener(new BannerLayout.OnBannerItemClickListener() {
             @Override
             public void onItemClick(int position) {
                 Toast.makeText(MainActivity.this, "点击了第  " + position+"  项", Toast.LENGTH_SHORT).show();
             }
         });
-        recyclerBanner.setAdapter(mzBannerAdapter);
-        bannerVertical.setAdapter(mzBannerAdapter2);
+        recyclerBanner.setAdapter(webBannerAdapter);
+        bannerVertical.setAdapter(WebBannerAdapter2);
     }
 
 

@@ -97,7 +97,7 @@ public  class BannerLayoutManager extends RecyclerView.LayoutManager {
 
     private boolean mRecycleChildrenOnDetach;
 
-    private boolean mInfinite = false;
+    private boolean mInfinite = true;
 
     private boolean mEnableBringCenterToFront;
 

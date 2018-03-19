@@ -48,15 +48,16 @@ public class BannerLayout extends FrameLayout {
     private boolean isPlaying = false;
 
     private boolean isAutoPlaying = true;
-
-
+    int itemSpace;
+    float centerScale;
+    float moveSpeed;
     protected Handler mHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
                 ++currentIndex;
 
-                    mRecyclerView.smoothScrollToPosition(currentIndex);
+                mRecyclerView.smoothScrollToPosition(currentIndex);
 
 
                 mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
@@ -85,9 +86,9 @@ public class BannerLayout extends FrameLayout {
         showIndicator = a.getBoolean(R.styleable.BannerLayout_showIndicator, true);
         autoPlayDuration = a.getInt(R.styleable.BannerLayout_interval, 4000);
         isAutoPlaying = a.getBoolean(R.styleable.BannerLayout_autoPlaying, true);
-        int itemSpace=a.getInt(R.styleable.BannerLayout_itemSpace, 20);
-        float centerScale=a.getFloat(R.styleable.BannerLayout_centerScale, 1.2f);
-        float moveSpeed=a.getFloat(R.styleable.BannerLayout_moveSpeed, 1.0f);
+        itemSpace = a.getInt(R.styleable.BannerLayout_itemSpace, 20);
+        centerScale = a.getFloat(R.styleable.BannerLayout_centerScale, 1.2f);
+        moveSpeed = a.getFloat(R.styleable.BannerLayout_moveSpeed, 1.0f);
         if (mSelectedDrawable == null) {
             //绘制默认选中状态图形
             GradientDrawable selectedGradientDrawable = new GradientDrawable();
@@ -108,12 +109,12 @@ public class BannerLayout extends FrameLayout {
         }
 
         indicatorMargin = dp2px(4);
-        int marginLeft =  dp2px(16);
-        int marginRight =  dp2px(0);
-        int marginBottom =  dp2px(11);
+        int marginLeft = dp2px(16);
+        int marginRight = dp2px(0);
+        int marginBottom = dp2px(11);
         int gravity = GravityCompat.START;
         int o = a.getInt(R.styleable.BannerLayout_orientation, 0);
-         orientation = 0;
+        orientation = 0;
         if (o == 0) {
             orientation = OrientationHelper.HORIZONTAL;
         } else if (o == 1) {
@@ -126,7 +127,6 @@ public class BannerLayout extends FrameLayout {
                 ViewGroup.LayoutParams.MATCH_PARENT);
         addView(mRecyclerView, vpLayoutParams);
         mLayoutManager = new BannerLayoutManager(getContext(), orientation);
-        mLayoutManager.setInfinite(true);
         mLayoutManager.setItemSpace(itemSpace);
         mLayoutManager.setCenterScale(centerScale);
         mLayoutManager.setMoveSpeed(moveSpeed);
@@ -150,9 +150,7 @@ public class BannerLayout extends FrameLayout {
         }
     }
 
-    /**
-     * 设置是否禁止滚动播放
-     */
+    // 设置是否禁止滚动播放
     public void setAutoPlaying(boolean isAutoPlaying) {
         this.isAutoPlaying = isAutoPlaying;
         setPlaying(this.isAutoPlaying);
@@ -160,11 +158,27 @@ public class BannerLayout extends FrameLayout {
     public boolean isPlaying() {
         return isPlaying;
     }
-
+    //设置是否显示指示器
     public void setShowIndicator(boolean showIndicator) {
         this.showIndicator = showIndicator;
         indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
     }
+    //设置当前图片缩放系数
+    public void setCenterScale(float centerScale) {
+        this.centerScale = centerScale;
+        mLayoutManager.setCenterScale(centerScale);
+    }
+    //设置跟随手指的移动速度
+    public void setMoveSpeed(float moveSpeed) {
+        this.moveSpeed = moveSpeed;
+        mLayoutManager.setMoveSpeed(moveSpeed);
+    }
+    //设置图片间距
+    public void setItemSpace(int itemSpace) {
+        this.itemSpace = itemSpace;
+        mLayoutManager.setItemSpace(itemSpace);
+    }
+
     /**
      * 设置轮播间隔时间
      *
@@ -173,7 +187,9 @@ public class BannerLayout extends FrameLayout {
     public void setAutoPlayDuration(int autoPlayDuration) {
         this.autoPlayDuration = autoPlayDuration;
     }
-
+public void setOrientation(int orientation){
+        mLayoutManager.setOrientation(orientation);
+}
     /**
      * 设置是否自动播放（上锁）
      *
@@ -192,16 +208,14 @@ public class BannerLayout extends FrameLayout {
     }
 
 
-
     /**
      * 设置轮播数据集
      */
     public void setAdapter(RecyclerView.Adapter adapter) {
         hasInit = false;
         mRecyclerView.setAdapter(adapter);
-
         bannerSize = adapter.getItemCount();
-        mLayoutManager.setInfinite(bannerSize>=3);
+        mLayoutManager.setInfinite(bannerSize >= 3);
         setPlaying(true);
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
 
