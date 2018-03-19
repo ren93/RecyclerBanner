@@ -7,7 +7,7 @@ RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。
 ## 属性
 
 
-| **属性名称**  | **API** | **意义** | **类型** | **默认值** |
+| **属性名称**  | **方法** | **意义** | **类型** | **默认值** |
 | --- | ---| --- | --- | --- |
 | app:showIndicator |setShowIndicator(boolean showIndicator)| 是否显示指示器 | boolean | true |
 | app:interval |setAutoPlayDuration(int autoPlayDuration)| 轮播时间间隔 | int | 4000 |
@@ -22,6 +22,16 @@ RecyclerBanner是一个利用RecycleView实现轮播图的自定义控件。
 ![](./pictures/banner.gif)
 ## 使用方法
 设置一个带数据的`RecyclerView.Adapter`即可。
+```
+   <com.example.library.banner.BannerLayout
+        android:id="@+id/recycler"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:autoPlaying="true"
+        app:centerScale="1.3"
+        app:itemSpace="20"
+        app:moveSpeed="1.8"/>
+```
 
 ```
 
