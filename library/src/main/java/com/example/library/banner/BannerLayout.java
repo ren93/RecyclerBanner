@@ -14,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -25,6 +26,8 @@ import com.example.library.R;
 import com.example.library.banner.layoutmanager.CenterSnapHelper;
 import com.example.library.banner.layoutmanager.BannerLayoutManager;
 
+import static android.widget.AbsListView.OnScrollListener.SCROLL_STATE_IDLE;
+
 public class BannerLayout extends FrameLayout {
 
     private int autoPlayDuration;//刷新间隔时间
@@ -35,7 +38,6 @@ public class BannerLayout extends FrameLayout {
     private Drawable mUnselectedDrawable;
     private IndicatorAdapter indicatorAdapter;
     private int indicatorMargin;//指示器间距
-    private int orientation;
     private RecyclerView mRecyclerView;
 
     private BannerLayoutManager mLayoutManager;
@@ -55,13 +57,12 @@ public class BannerLayout extends FrameLayout {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == WHAT_AUTO_PLAY) {
-                ++currentIndex;
-
-                mRecyclerView.smoothScrollToPosition(currentIndex);
-
-
-                mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
-                refreshIndicator();
+                if (currentIndex == mLayoutManager.getCurrentPosition()) {
+                    ++currentIndex;
+                    mRecyclerView.smoothScrollToPosition(currentIndex);
+                    mHandler.sendEmptyMessageDelayed(WHAT_AUTO_PLAY, autoPlayDuration);
+                    refreshIndicator();
+                }
             }
             return false;
         }
@@ -114,7 +115,7 @@ public class BannerLayout extends FrameLayout {
         int marginBottom = dp2px(11);
         int gravity = GravityCompat.START;
         int o = a.getInt(R.styleable.BannerLayout_orientation, 0);
-        orientation = 0;
+        int orientation = 0;
         if (o == 0) {
             orientation = OrientationHelper.HORIZONTAL;
         } else if (o == 1) {
@@ -155,24 +156,29 @@ public class BannerLayout extends FrameLayout {
         this.isAutoPlaying = isAutoPlaying;
         setPlaying(this.isAutoPlaying);
     }
+
     public boolean isPlaying() {
         return isPlaying;
     }
+
     //设置是否显示指示器
     public void setShowIndicator(boolean showIndicator) {
         this.showIndicator = showIndicator;
         indicatorContainer.setVisibility(showIndicator ? VISIBLE : GONE);
     }
+
     //设置当前图片缩放系数
     public void setCenterScale(float centerScale) {
         this.centerScale = centerScale;
         mLayoutManager.setCenterScale(centerScale);
     }
+
     //设置跟随手指的移动速度
     public void setMoveSpeed(float moveSpeed) {
         this.moveSpeed = moveSpeed;
         mLayoutManager.setMoveSpeed(moveSpeed);
     }
+
     //设置图片间距
     public void setItemSpace(int itemSpace) {
         this.itemSpace = itemSpace;
@@ -187,9 +193,11 @@ public class BannerLayout extends FrameLayout {
     public void setAutoPlayDuration(int autoPlayDuration) {
         this.autoPlayDuration = autoPlayDuration;
     }
-public void setOrientation(int orientation){
+
+    public void setOrientation(int orientation) {
         mLayoutManager.setOrientation(orientation);
-}
+    }
+
     /**
      * 设置是否自动播放（上锁）
      *
@@ -221,14 +229,20 @@ public void setOrientation(int orientation){
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-
+                if (dx != 0) {
+                    setPlaying(false);
+                }
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 int first = mLayoutManager.getCurrentPosition();
+                Log.d("xxx", "onScrollStateChanged");
                 if (currentIndex != first) {
                     currentIndex = first;
+                }
+                if (newState == SCROLL_STATE_IDLE) {
+                    setAutoPlaying(true);
                 }
                 refreshIndicator();
             }
