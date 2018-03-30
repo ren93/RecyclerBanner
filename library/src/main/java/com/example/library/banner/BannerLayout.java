@@ -242,7 +242,7 @@ public class BannerLayout extends FrameLayout {
                     currentIndex = first;
                 }
                 if (newState == SCROLL_STATE_IDLE) {
-                    setAutoPlaying(true);
+                    setPlaying(true);
                 }
                 refreshIndicator();
             }
